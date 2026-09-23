@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Document intelligence — team5pm</title>
+<title>Document intelligence · team5pm</title>
 <style>
   @page {
     size: A4;
@@ -439,13 +439,13 @@
 <section id="what-built">
   <p class="kicker">What built this</p>
   <h2>The model proposes. I decide.</h2>
-  <p>Cursor wrote most of the code, inside the architecture above — it does not choose the architecture. ChatGPT and Claude were the reasoning partners: the failure taxonomy, the retry policy, and the column schema were argued through with them before a line was written. Neither approved a value or touched a row in Postgres. Same rule as the rest of this document: the model proposes, the person and the code decide.</p>
+  <p>Cursor wrote most of the code, inside the architecture above. It does not choose the architecture. ChatGPT and Claude were the reasoning partners: the failure taxonomy, the retry policy, and the column schema were argued through with them before a line was written. Neither approved a value or touched a row in Postgres. Same rule as the rest of this document: the model proposes, the person and the code decide.</p>
 </section>
 
 <section id="why-running">
   <p class="kicker">Why it runs, not only reads</p>
   <h2>I build to find the break</h2>
-  <p>A written design can describe a rule. It cannot tell you where that rule breaks — under a real file, a slow API, a second upload of the same bytes. I build to find the break before a reviewer does, not to argue I would have found it eventually. That is not extra effort for this exercise. It is how I harden a process: by running it, not by scoping it well and hoping the gaps stay theoretical.</p>
+  <p>A written design can describe a rule. It cannot tell you where that rule breaks. Under a real file, a slow API, a second upload of the same bytes. I build to find the break before a reviewer does, not to argue I would have found it eventually. That is not extra effort for this exercise. It is how I harden a process: by running it, not by scoping it well and hoping the gaps stay theoretical.</p>
 </section>
 
 <section id="part-a">
@@ -459,7 +459,7 @@
   <div class="qa" id="a2">
     <h3>A2. Waiting, and not waiting</h3>
     <p>Synchronous means the caller sits until the work is finished. Asynchronous means the caller is told the file was taken, and the work happens after that call has ended.</p>
-    <p>Intake on this build is the second kind. It stores the file, inserts received, queues the worker, and replies. The reply is that the file is not approved yet. The case buttons on the desk then watch the book until the row leaves reading. A 100-page file takes the same first reply. It must not hold a browser open. Chunking that file is still to build. The reply is not.</p>
+    <p>Intake on this build is the second kind. It stores the file, inserts received, queues the worker, and replies. The reply is that the file is not approved yet. The case buttons on the desk then watch the book until the row leaves reading. A 100-page file takes the same first reply. It must not hold a browser open. The reader groups that file after the reply. I have not put a 100-page file on the book.</p>
   </div>
   <div class="qa" id="a3">
     <h3>A3. A 429 from the model</h3>
@@ -574,7 +574,7 @@
   <h2>A contract is a set of pages</h2>
   <p>A one-page invoice is one text block, one model call, one decision. A 100-page contract is a pile of pages. Some have text, some are scans, some are blank on purpose. The person already has the reply that the file is received and not approved. The job id is the document id. Sending the file again hits the same hash.</p>
   <p>The reader walks the pages. Text stays text. A page with no text goes to OCR. If OCR is still empty, the page is named and the file is held. That page is not sent on. A long file is then grouped, about ten at a time. Each group is its own call, and each candidate keeps its provenance: which chunk, which pages, which field, which value, which source page, and a short excerpt. The merge sees that chunk 4 says 18,000, from page 37. If two chunks disagree, both values are kept and the file is held.</p>
-  <p>A file of ten pages or fewer is one call for each page that has text. Past that, the reader splits the pages into groups of about ten. Each group is one call. The call is told the range — pages 21–30 of a longer document — and it may return a field only when those pages support it. It says when the range reads as a continuation. Temperature stays zero. A blank field is left blank. That call uses the same four tries, three seconds apart.</p>
+  <p>A file of ten pages or fewer is one call for each page that has text. Past that, the reader splits the pages into groups of about ten. Each group is one call. The call is told the range, pages 21-30 of a longer document, and it may return a field only when those pages support it. It says when the range reads as a continuation. Temperature stays zero. A blank field is left blank. That call uses the same four tries, three seconds apart.</p>
   <p>The groups run one at a time, with a second and a half between calls. One call is in flight. The limit around it is two or three, so a hundred-page file does not send ten calls at once.</p>
   <p>The merge is the rule this build already uses. No group offered a value, and the field stays blank. One value is the candidate, with the page it came from. The same value from two groups is kept. Different values are both kept, nothing is picked, and the file is held.</p>
   <p>A one-page invoice is still one call. The blank-page rule is unchanged. A contract whose second page has no text is held, and the note names page 2. I checked the grouping and the merge against made-up chunk results. I have not put a 100-page file on the book.</p>
