@@ -218,15 +218,15 @@
     text-transform: uppercase;
     color: #9a3412;
     font-weight: 600;
-    margin: 3.2mm 0 0;
+    margin: 2.4mm 0 0;
   }
-  .contents ol { list-style: none; padding: 0; margin: 0 0 1mm; }
+  .contents ol { list-style: none; padding: 0; margin: 0 0 0.6mm; }
   .contents li { margin: 0; border-bottom: 0.4pt solid #e7e5e4; }
   .contents a {
     display: flex;
     justify-content: space-between;
     gap: 6mm;
-    padding: 1.15mm 0;
+    padding: 0.9mm 0;
     text-decoration: none;
     font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 10.5pt;
@@ -298,6 +298,7 @@
     <li><a href="#proof">Proof. Production acceptance</a></li>
     <li><a href="#beyond">Beyond the brief. Where to open the build</a></li>
     <li><a href="#press">What you can press</a></li>
+    <li><a href="#ask-first">What I would ask first</a></li>
     <li><a href="#appendix">Appendix. What I can point at</a></li>
     <li><a href="#references">References</a></li>
   </ol>
@@ -673,6 +674,21 @@
   <p>The brief’s file formats are a native-text PDF, a scanned image, and a Word document. The book has the PDF cases and one Word invoice, INV-3001, cited from section 1. A picture embedded in a Word file is read with the same OCR as a scanned page. It is not converted into a PDF first. A PNG or a JPEG uses the image route. There is no photo in this book.</p>
   <p>The demo mailbox is team5pmdocintel@gmail.com. For the demo it accepts a file from any sender, so the path can be tested. That is not the live rule. Once this is in production, the inbox accepts a file only when the From address is a company email address. Mail from any other domain is refused. It is not stored, and it is not sent to the model.</p>
   <p>Production still replaces the link with a real login, and honours a real Retry-After. The holds and the hash are rows I can name. ClamAV runs before a file is opened. Slack, Drive, and the mailbox are running doors. Before a restart I set an update flag. While that flag is up, a new file on any door is kept and the person is told. The sentence is not optional. It says an update is in progress, the file is kept, and the desk is not offline. I would rather show a hold I can explain than a login I have not built.</p>
+</section>
+
+<section id="ask-first">
+  <p class="kicker">What I would ask first</p>
+  <h2>Four answers that would change the build, not the config</h2>
+  <p>A design that stops before it knows should also say what it does not know yet. Four questions sit under this one. I have put them in the order they would change the most.</p>
+  <h3>Can page content leave the building</h3>
+  <p>This build sends every page to OpenRouter, then Gemini. If a contract carries a confidentiality clause, or if legal has a rule against sending unredacted text to a third party, the model call is a different reader. A self-hosted open-weight model, or a signed no-retention agreement with the provider. That is a different cost line, a different accuracy ceiling, and possibly a GPU the company does not yet have. I would ask this first. It is the one answer that is a change of system, rather than a setting.</p>
+  <h3>How many documents, and how many at once</h3>
+  <p>A stream can mean twenty documents a day or two thousand. This build is one worker on one queue. Real volume changes the worker count, how many calls the code may have in flight against the provider's own limit, and whether Postgres alone still holds the write load. The checks stay. The number of machines changes.</p>
+  <h3>What the record feeds next</h3>
+  <p>The brief allows a sheet or a database, and this build is a sheet. If finance's next step is Xero, or legal's is a contract system, the sheet stays a staging copy. An output adapter, with its own sign-in and its own rule against writing the same row twice, joins the record.</p>
+  <h3>What the company already runs</h3>
+  <p>This build's doors are Slack, Drive, and Gmail. A Microsoft shop makes those doors Teams, SharePoint, and Outlook. The login I have not built becomes Entra ID, where this one would have been Google. If a signed agreement has to show it was not altered, keeping the row is the start. A periodic signed manifest of the ledger would sit above it.</p>
+  <p>I do not have these answers yet. That is why they are written here. A held field is a better answer than an invented one.</p>
 </section>
 
 <section id="appendix">
