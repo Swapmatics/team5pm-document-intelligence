@@ -115,7 +115,7 @@ const intakeHook = trigger({
       options: { binaryData: true, binaryPropertyName: 'data' },
     },
     credentials: { httpHeaderAuth: newCredential('DocIntel webhook', 'WEBHOOK_CREDENTIAL_ID') },
-    output: [{ json: { body: { stated_type: 'invoice', department: 'finance', client: 'Northwind', submitted_by: 'Dre' } } }],
+    output: [{ json: { body: { stated_type: 'invoice', department: 'finance', client: 'Northwind', submitted_by: 'Andre' } } }],
   },
 });
 

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>team5pm · document intelligence</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
@@ -49,6 +50,8 @@
   }
   h1 em { font-style: normal; color: var(--gold); }
   p.who { margin: -8px 0 18px; color: var(--gold); }
+  p.doors { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
+  p.doors a { color: var(--gold); }
   #thread { display: flex; flex-direction: column; gap: 10px; min-height: 180px; }
   .msg { max-width: 40rem; padding: 14px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
   .msg.me { align-self: flex-end; background: #1a1a1a; border-color: rgba(255, 212, 0, 0.45); }
@@ -130,12 +133,14 @@
     <div class="brand"><span class="mark" aria-hidden="true"></span> team5pm</div>
     <h1>document <em>intelligence</em></h1>
     <p class="lead">Drop a PDF here, or run a case. Nothing is written as final until the checks pass, and you will hear that in this thread.</p>
+    <p class="doors">Same intake, three other doors. Mail a PDF to <a href="mailto:team5pmdocintel@gmail.com">team5pmdocintel@gmail.com</a>. Drop a file in the <a href="https://drive.google.com/drive/folders/1m-EGcH6zr9IfpXxV5nP68yZH1X9oPp3H">Drive folder</a>. Slack is the same door in the superuser chat. The row shows up in this book. The superuser status line opens the sheet.</p>
     <p id="status"></p>
     <div class="cases">
       <button type="button" data-case="invoice">Clean invoice</button>
       <button type="button" data-case="invoice-again">Same file again</button>
       <button type="button" data-case="invoice-revised">Revised invoice</button>
       <button type="button" data-case="contract-blank">Blank page</button>
+      <button type="button" data-case="ocr-wrong">Wrong words</button>
     </div>
     <p id="case-result"></p>
     <p id="who" class="who"></p>
@@ -160,7 +165,8 @@
 </main>
 <script>
 const thread = document.getElementById('thread');
-const seat = new URLSearchParams(location.search).get('as') || '';
+const PATH_SEATS = { '/superuser': 'andre', '/finance': 'finance', '/projects': 'projects', '/accounts': 'accounts' };
+const seat = new URLSearchParams(location.search).get('as') || PATH_SEATS[location.pathname.replace(/\/$/, '')] || '';
 let person = null;
 const seenBot = {};
 const confirmFor = {};
@@ -450,6 +456,7 @@ const EXPECT = {
   'invoice-again': { label: 'Same file again', status: 'identical' },
   'invoice-revised': { label: 'Revised invoice', status: 'awaiting_confirm', total_amount: '18000.00', reference_number: 'INV-1001' },
   'contract-blank': { label: 'Blank page', status: 'held', page_has: 'Page 2' },
+  'ocr-wrong': { label: 'Wrong words', status: 'held', total_blank: true, note_has: 'were not a total I could keep', note_lacks: 'no text' },
 };
 function findRow(book, id) {
   const keys = ['reading', 'current', 'held', 'history'];
@@ -473,6 +480,10 @@ function caseMisses(name, reply, row) {
     if (expect[key] && String(row[key] || '') !== expect[key]) misses.push(key.replace(/_/g, ' ') + ' is ' + (row[key] || 'blank'));
   });
   if (expect.page_has && String(row.page_notes || '').indexOf(expect.page_has) === -1) misses.push('the note does not name ' + expect.page_has);
+  if (expect.total_blank && String(row.total_amount || '') !== '') misses.push('a total was kept');
+  const notes = String(row.validation_notes || '') + ' ' + String(row.page_notes || '');
+  if (expect.note_has && notes.indexOf(expect.note_has) === -1) misses.push('the note does not say the words were not a total');
+  if (expect.note_lacks && notes.indexOf(expect.note_lacks) !== -1) misses.push('this was treated as a blank page');
   return misses;
 }
 async function runCase(name) {
@@ -564,8 +575,9 @@ async function loadPerson() {
     return;
   }
   person = await res.json();
-  who.textContent = person.label;
-  say('This chat is ' + person.label + '. The record book is the same one every door writes.');
+  const scope = person.view === 'every department' ? 'every department' : person.department + ' only';
+  who.textContent = person.label + ' — ' + scope;
+  say('This chat is ' + person.label + '. Showing ' + scope + '.');
 }
 refresh();
 setInterval(refresh, 4000);

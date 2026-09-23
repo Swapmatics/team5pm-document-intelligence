@@ -12,7 +12,7 @@ const confirmHook = trigger({
       responseMode: 'responseNode',
     },
     credentials: { httpHeaderAuth: newCredential('DocIntel webhook', 'fdad2f81-1ffa-43b4-8852-cea41ac4f091') },
-    output: [{ json: { body: { document_id: 'DOC-1', decision: 'yes', submitted_by: 'Dre' } } }],
+    output: [{ json: { body: { document_id: 'DOC-1', decision: 'yes', submitted_by: 'Andre' } } }],
   },
 });
 
@@ -97,7 +97,7 @@ const decide = node({
   config: {
     name: 'Read the answer',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: decideCode },
-    output: [{ json: { proceed: 'no', document_id: 'DOC-1', status: 'held', message: 'Kept', reply_json: '{}', body: 'Kept', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z', old_id: 'DOC-0', validation_notes: '', reviewed_by: 'Dre', reviewed_at: '2026-01-01T00:00:00.000Z', accepted_at: '', superseded_by: 'DOC-1' } }],
+    output: [{ json: { proceed: 'no', document_id: 'DOC-1', status: 'held', message: 'Kept', reply_json: '{}', body: 'Kept', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z', old_id: 'DOC-0', validation_notes: '', reviewed_by: 'Andre', reviewed_at: '2026-01-01T00:00:00.000Z', accepted_at: '', superseded_by: 'DOC-1' } }],
   },
 });
 
@@ -204,7 +204,7 @@ const restore = node({
       language: 'javaScript',
       jsCode: 'const d = $("Read the answer").first().json; let failed = null; try { failed = $("Replacement did not finish").first().json; } catch (e) { failed = null; } const body = (failed && failed.failure_body) || d.body || d.message || ""; const reply = (failed && failed.failure_body && failed.reply_json) || d.reply_json; return [{ json: { document_id: d.document_id || "", submitted_by: d.submitted_by || "", body: body, created_at: (failed && failed.created_at) || d.created_at, reply_json: reply } }];',
     },
-    output: [{ json: { document_id: 'DOC-1', submitted_by: 'Dre', body: 'Done', created_at: '2026-01-01T00:00:00.000Z', reply_json: '{}' } }],
+    output: [{ json: { document_id: 'DOC-1', submitted_by: 'Andre', body: 'Done', created_at: '2026-01-01T00:00:00.000Z', reply_json: '{}' } }],
   },
 });
 
@@ -298,7 +298,7 @@ const message = 'The replacement did not finish. ' + d.old_id + ' is still the c
 return [{ json: { restore: 'yes', old_id: d.old_id, failure_body: message, document_id: d.document_id || '', submitted_by: d.submitted_by || '', body: message, created_at: now, reply_json: JSON.stringify({ message: message, status: 'error', document_id: d.document_id || '' }) } }];
 `,
     },
-    output: [{ json: { restore: 'yes', old_id: 'DOC-0', failure_body: 'The replacement did not finish.', document_id: 'DOC-1', submitted_by: 'Dre', body: 'The replacement did not finish.', created_at: '2026-01-01T00:00:00.000Z', reply_json: '{}' } }],
+    output: [{ json: { restore: 'yes', old_id: 'DOC-0', failure_body: 'The replacement did not finish.', document_id: 'DOC-1', submitted_by: 'Andre', body: 'The replacement did not finish.', created_at: '2026-01-01T00:00:00.000Z', reply_json: '{}' } }],
   },
 });
 

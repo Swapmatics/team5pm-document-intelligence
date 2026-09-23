@@ -444,6 +444,37 @@ const evidence = [];
 const materialLabels = { total_amount: 'The total', reference_number: 'The reference', document_date: 'The document date', effective_date: 'The effective date', counterparty: 'The other party', parties: 'The parties', currency: 'The currency' };
 const requiredKeys = {};
 for (const pair of (required[built.stated_type] || [])) requiredKeys[pair[0]] = true;
+if (built.stated_type === 'invoice' && !couldNotSplit) {
+  const totalPages = indexes.length ? indexes : [{ page: 1, index: 0, len: 0 }];
+  const badPages = [];
+  const amounts = [];
+  for (let p = 0; p < totalPages.length; p++) {
+    const start = indexes.length ? totalPages[p].index + totalPages[p].len : 0;
+    const end = indexes.length && p + 1 < totalPages.length ? totalPages[p + 1].index : text.length;
+    const lines = text.slice(start, end).split('\\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const at = line.toLowerCase().indexOf('total');
+      if (at < 0) continue;
+      const bits = line.slice(at + 5).split(/\\s+/);
+      let token = '';
+      for (let b = 0; b < bits.length; b++) {
+        const cleaned = bits[b].replace(/[^0-9A-Za-z.]/g, '');
+        if (cleaned && /\\d/.test(cleaned)) { token = cleaned; break; }
+      }
+      if (!token) continue;
+      if (!/^\\d+\\.\\d{2}$/.test(token)) badPages.push(totalPages[p].page);
+      else if (amounts.indexOf(token) === -1) amounts.push(token);
+    }
+  }
+  if (badPages.length) {
+    fields.total_amount = '';
+    problems.push('Page ' + badPages[0] + ' was read, and the words were not a total I could keep. I did not guess.');
+  } else if (amounts.length > 1) {
+    fields.total_amount = '';
+    problems.push('The file gives more than one total: ' + amounts.join(' and ') + '. I did not pick one.');
+  }
+}
 if (text.replace(/\s/g, '').length >= 20 && !couldNotSplit) {
   for (const key of Object.keys(materialLabels)) {
     if (!fields[key]) continue;
@@ -613,7 +644,7 @@ const submitHook = trigger({
       options: { binaryData: true, binaryPropertyName: 'data' },
     },
     credentials: { httpHeaderAuth: newCredential('DocIntel webhook', 'fdad2f81-1ffa-43b4-8852-cea41ac4f091') },
-    output: [{ json: { body: { stated_type: 'invoice', department: 'finance', client: 'Northwind', submitted_by: 'Dre' } } }],
+    output: [{ json: { body: { stated_type: 'invoice', department: 'finance', client: 'Northwind', submitted_by: 'Andre' } } }],
   },
 });
 
@@ -802,7 +833,7 @@ const restoreShort = node({
   config: {
     name: 'Conversation from decision',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: restoreShortCode },
-    output: [{ json: { body: 'Already on file', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z' } }],
+    output: [{ json: { body: 'Already on file', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z' } }],
   },
 });
 
@@ -812,7 +843,7 @@ const restoreJudge = node({
   config: {
     name: 'Conversation from judgement',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: restoreJudgeCode },
-    output: [{ json: { body: 'On the record', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z' } }],
+    output: [{ json: { body: 'On the record', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z' } }],
   },
 });
 
@@ -822,7 +853,7 @@ const conversation = node({
   config: {
     name: 'Conversation line',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: 'return $input.all();' },
-    output: [{ json: { body: 'message', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z', content_sha256: 'abc', note: 'message', existing_document_id: '', department: 'finance', submitted_at: '2026-01-01T00:00:00.000Z' } }],
+    output: [{ json: { body: 'message', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z', content_sha256: 'abc', note: 'message', existing_document_id: '', department: 'finance', submitted_at: '2026-01-01T00:00:00.000Z' } }],
   },
 });
 
@@ -904,7 +935,7 @@ return [{ json: {
 }}];
 `,
     },
-    output: [{ json: { content_sha256: 'abc', submitted_by: 'Dre', submitted_at: '2026-01-01', department: 'finance', note: 'same file', existing_document_id: 'DOC-1' } }],
+    output: [{ json: { content_sha256: 'abc', submitted_by: 'Andre', submitted_at: '2026-01-01', department: 'finance', note: 'same file', existing_document_id: 'DOC-1' } }],
   },
 });
 

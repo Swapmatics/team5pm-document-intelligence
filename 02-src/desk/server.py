@@ -3,7 +3,6 @@
 
 import base64
 import hashlib
-import io
 import json
 import os
 import re
@@ -16,7 +15,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlparse
 from urllib.request import Request, urlopen
 
-from engine import alert_lines, extract_pdf, extract_word, is_word, marked, read_word, review_problems
+from engine import alert_lines, extract_pdf, extract_word, is_word, marked, read_pages, read_word, review_problems
 from scan import scan_bytes
 
 ROOT = Path(__file__).resolve().parent
@@ -31,10 +30,31 @@ STAFF = {
         "id": "andre",
         "submitted_by": "Andre",
         "department": "finance",
-        "label": "Andre · finance",
+        "label": "Andre · superuser",
         "slack_user_id": "U0BUFKGUH3J",
         "email": "team5pmdocintel@gmail.com",
         "superuser": True,
+    },
+    "finance": {
+        "id": "finance",
+        "submitted_by": "Finance",
+        "department": "finance",
+        "label": "Finance",
+        "superuser": False,
+    },
+    "projects": {
+        "id": "projects",
+        "submitted_by": "Projects",
+        "department": "projects",
+        "label": "Projects",
+        "superuser": False,
+    },
+    "accounts": {
+        "id": "accounts",
+        "submitted_by": "Accounts",
+        "department": "accounts",
+        "label": "Accounts",
+        "superuser": False,
     },
 }
 
@@ -66,6 +86,7 @@ def public_person(person):
         "submitted_by": person["submitted_by"],
         "department": person["department"],
         "label": person["label"],
+        "view": "every department" if person.get("superuser") else person["department"],
     }
 
 
@@ -127,7 +148,10 @@ class Desk(BaseHTTPRequestHandler):
             if not person:
                 self._send(401, '{"message":"This page does not say who you are."}', "application/json")
                 return
-            self._send(200, json.dumps(stack_status()), "application/json")
+            status = stack_status()
+            if not person.get("superuser"):
+                status["sheet_url"] = ""
+            self._send(200, json.dumps(status), "application/json")
             return
         if parsed.path == "/records":
             person = person_from_query(parse_qs(parsed.query))
@@ -604,15 +628,8 @@ def keep_original_if_recorded(raw, prepared):
 
 
 def marked_pages(data):
-    try:
-        from pypdf import PdfReader
-    except ImportError as exc:
-        raise RuntimeError("pypdf is not installed. Run: python3 -m pip install -r requirements.txt") from exc
-    reader = PdfReader(io.BytesIO(data))
-    chunks = []
-    for index, page in enumerate(reader.pages, 1):
-        chunks.append("--- PAGE %d ---\n%s" % (index, page.extract_text() or ""))
-    return len(reader.pages), "\n".join(chunks)
+    pages = read_pages(data)
+    return len(pages), marked(pages)
 
 
 CASES = {
@@ -620,6 +637,7 @@ CASES = {
     "invoice-again": {"file": "invoice.pdf", "stated_type": "invoice", "client": "Northwind Supplies"},
     "invoice-revised": {"file": "invoice-revised.pdf", "stated_type": "invoice", "client": "Northwind Supplies"},
     "contract-blank": {"file": "contract-missing-page.pdf", "stated_type": "contract", "client": "Northwind Supplies"},
+    "ocr-wrong": {"file": "invoice-wrong-words.pdf", "stated_type": "invoice", "client": "Northwind Supplies"},
 }
 
 

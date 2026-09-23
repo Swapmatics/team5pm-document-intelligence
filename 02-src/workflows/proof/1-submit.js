@@ -574,7 +574,7 @@ const submitHook = trigger({
       options: { binaryData: true, binaryPropertyName: 'data' },
     },
     credentials: { httpHeaderAuth: newCredential('DocIntel webhook', 'fdad2f81-1ffa-43b4-8852-cea41ac4f091') },
-    output: [{ json: { body: { stated_type: 'invoice', department: 'finance', client: 'Northwind', submitted_by: 'Dre' } } }],
+    output: [{ json: { body: { stated_type: 'invoice', department: 'finance', client: 'Northwind', submitted_by: 'Andre' } } }],
   },
 });
 
@@ -765,7 +765,7 @@ const restoreShort = node({
   config: {
     name: 'Conversation from decision',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: restoreShortCode },
-    output: [{ json: { body: 'Already on file', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z' } }],
+    output: [{ json: { body: 'Already on file', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z' } }],
   },
 });
 
@@ -775,7 +775,7 @@ const restoreJudge = node({
   config: {
     name: 'Conversation from judgement',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: restoreJudgeCode },
-    output: [{ json: { body: 'On the record', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z' } }],
+    output: [{ json: { body: 'On the record', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z' } }],
   },
 });
 
@@ -785,7 +785,7 @@ const conversation = node({
   config: {
     name: 'Conversation line',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: 'return $input.all();' },
-    output: [{ json: { body: 'message', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z', content_sha256: 'abc', note: 'message', existing_document_id: '', department: 'finance', submitted_at: '2026-01-01T00:00:00.000Z' } }],
+    output: [{ json: { body: 'message', reply_json: '{}', document_id: 'DOC-1', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z', content_sha256: 'abc', note: 'message', existing_document_id: '', department: 'finance', submitted_at: '2026-01-01T00:00:00.000Z' } }],
   },
 });
 
@@ -867,7 +867,7 @@ return [{ json: {
 }}];
 `,
     },
-    output: [{ json: { content_sha256: 'abc', submitted_by: 'Dre', submitted_at: '2026-01-01', department: 'finance', note: 'same file', existing_document_id: 'DOC-1' } }],
+    output: [{ json: { content_sha256: 'abc', submitted_by: 'Andre', submitted_at: '2026-01-01', department: 'finance', note: 'same file', existing_document_id: 'DOC-1' } }],
   },
 });
 

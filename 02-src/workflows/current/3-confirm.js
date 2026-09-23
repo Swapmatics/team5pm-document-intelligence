@@ -12,7 +12,7 @@ const hook = trigger({
       responseMode: 'responseNode',
     },
     credentials: { httpHeaderAuth: newCredential('DocIntel webhook', 'WEBHOOK_CREDENTIAL_ID') },
-    output: [{ json: { body: { document_id: 'DOC-1', decision: 'yes', submitted_by: 'Dre' } } }],
+    output: [{ json: { body: { document_id: 'DOC-1', decision: 'yes', submitted_by: 'Andre' } } }],
   },
 });
 
@@ -66,7 +66,7 @@ const decide = node({
   config: {
     name: 'Read the answer',
     parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: decideCode },
-    output: [{ json: { proceed: 'no', document_id: 'DOC-1', reply_json: '{}', payload: {}, body: 'Kept', submitted_by: 'Dre', created_at: '2026-01-01T00:00:00.000Z' } }],
+    output: [{ json: { proceed: 'no', document_id: 'DOC-1', reply_json: '{}', payload: {}, body: 'Kept', submitted_by: 'Andre', created_at: '2026-01-01T00:00:00.000Z' } }],
   },
 });
 

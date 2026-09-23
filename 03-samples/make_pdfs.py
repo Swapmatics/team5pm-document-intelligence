@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the three synthetic PDFs used to test DocIntel."""
+"""Build the synthetic PDFs used to test DocIntel."""
 
 from pathlib import Path
 
@@ -102,4 +102,33 @@ blank = " "
     blank,
     "--- PAGE 3 ---\nExhibit A\nSigned by both parties.\nThis page does not state a new total.\n",
 ]))
+
+
+def wrong_words():
+    """A scan with no text layer. The total is letters, not an amount."""
+    import fitz
+    body = "\n".join([
+        "INVOICE",
+        "Title: Tax invoice",
+        "Supplier: Northwind Supplies",
+        "Client: Cape Harbour Projects",
+        "Invoice number: INV-WRONG",
+        "Invoice date: 2026-04-02",
+        "Currency: ZAR",
+        "Total: 12S00.OO",
+        "This invoice is for timber delivered to the harbour shed.",
+    ])
+    drawn = fitz.open()
+    page = drawn.new_page(width=612, height=792)
+    page.insert_text((50, 80), body, fontsize=16, fontname="helv")
+    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+    drawn.close()
+    image = fitz.open()
+    sheet = image.new_page(width=612, height=792)
+    sheet.insert_image(sheet.rect, pixmap=pix)
+    image.save(OUT / "invoice-wrong-words.pdf", deflate=True, garbage=4)
+    image.close()
+
+
+wrong_words()
 print("wrote", OUT)

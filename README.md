@@ -36,9 +36,16 @@ docker compose -f 04-run/docker-compose.yml --env-file 04-run/.env up -d
 
 The desk, n8n, the worker, Slack, Drive, and the mailbox start again after a reboot. Postgres, Redis, and MinIO come back when Docker does.
 
-Open http://127.0.0.1:8787/?as=andre
+These links are staff-map seats, not a login. Each one opens that seat’s view.
 
-That link is a staff-map seat, not a login. Andre is the superuser. A person outside finance does not receive currency or totals from the desk.
+| Seat | Link | What it shows |
+|---|---|---|
+| Superuser | https://docintel.ziton.tech/superuser | Every department, including amounts |
+| Finance | https://docintel.ziton.tech/finance | Finance rows, including amounts |
+| Projects | https://docintel.ziton.tech/projects | Projects rows. Amounts are left off |
+| Accounts | https://docintel.ziton.tech/accounts | Accounts rows. Amounts are left off |
+
+On this machine the same views are http://127.0.0.1:8787/superuser, /finance, /projects, and /accounts.
 
 Copy `.env.example` to `.env` and `04-run/.env.example` to `04-run/.env`. The webhook header is `X-Docintel-Key`. Its value is `DOCINTEL_WEBHOOK_SECRET`. Keys, tokens, and the service-account file stay in those env files. They are not in this repository.
 
