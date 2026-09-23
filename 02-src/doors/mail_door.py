@@ -62,6 +62,12 @@ def automated_sender(address):
     return low.endswith("@google.com") or low.endswith("@accounts.google.com") or low.endswith("@googlecloud.com")
 
 
+def own_mailbox(address):
+    """A reply to this inbox would come straight back and be read again."""
+    user = (os.environ.get("DOCINTEL_MAIL_USER") or "").lower()
+    return bool(user) and (address or "").lower() == user
+
+
 def send_reply(to_address, subject, message_id, body):
     user = os.environ.get("DOCINTEL_MAIL_USER", "")
     password = os.environ.get("DOCINTEL_MAIL_PASSWORD", "")
@@ -201,13 +207,13 @@ def poll():
                 for name, mime, payload in attachments:
                     text, document_id = outcome_for(person, stated, client, name, mime, payload)
                     lines.append(text)
-                    if document_id and not automated_sender(address):
+                    if document_id and not automated_sender(address) and not own_mailbox(address):
                         threading.Thread(
                             target=follow_and_reply,
                             args=(person["id"], document_id, name, address, subject, message_id),
                             daemon=True,
                         ).start()
-            if lines and not automated_sender(address):
+            if lines and not automated_sender(address) and not own_mailbox(address):
                 try:
                     send_reply(address, subject, message_id, "\n\n".join(lines))
                 except Exception as exc:

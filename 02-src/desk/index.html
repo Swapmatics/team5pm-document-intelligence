@@ -32,7 +32,8 @@
   main { display: grid; grid-template-columns: 1.25fr 0.75fr; min-height: 100vh; }
   section { padding: 32px 36px; }
   .book { border-left: 1px solid var(--line); background: #050505; }
-  .brand { display: flex; align-items: center; gap: 10px; font-family: Inter, sans-serif; font-weight: 500; letter-spacing: 0; }
+  .brand { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; font-family: Inter, sans-serif; font-weight: 500; letter-spacing: 0; }
+  .lockup { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
   .mark {
     width: 0; height: 0;
     border-top: 7px solid transparent;
@@ -118,7 +119,7 @@
   .cases { margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 8px; }
   .cases button { background: transparent; color: var(--ink); border: 1px solid var(--line); }
   #case-result { margin: 8px 0 0; color: var(--muted); }
-  #status { margin: 0 0 8px; color: var(--gold); font-size: 14px; }
+  #status { margin: 0; color: var(--gold); font-size: 13px; line-height: 1.35; flex: 1 1 16rem; }
   @media (max-width: 800px) {
     main { grid-template-columns: 1fr; }
     .book { border-left: 0; border-top: 1px solid var(--line); }
@@ -130,11 +131,10 @@
 <body>
 <main>
   <section>
-    <div class="brand"><span class="mark" aria-hidden="true"></span> team5pm</div>
+    <div class="brand"><span class="lockup"><span class="mark" aria-hidden="true"></span><span class="name">team5pm</span></span><p id="status"></p></div>
     <h1>document <em>intelligence</em></h1>
     <p class="lead">Drop a PDF here, or run a case. Nothing is written as final until the checks pass, and you will hear that in this thread.</p>
-    <p class="doors">Same intake, three other doors. Mail a PDF to <a href="mailto:team5pmdocintel@gmail.com">team5pmdocintel@gmail.com</a>. Drop a file in the <a href="https://drive.google.com/drive/folders/1m-EGcH6zr9IfpXxV5nP68yZH1X9oPp3H">Drive folder</a>. Slack is the same door in the superuser chat. The row shows up in this book. The superuser status line opens the sheet.</p>
-    <p id="status"></p>
+    <p class="doors">Same intake, three other doors. Mail a PDF to <a href="mailto:team5pmdocintel@gmail.com">team5pmdocintel@gmail.com</a>. Drop a file in the <a href="https://drive.google.com/drive/folders/1m-EGcH6zr9IfpXxV5nP68yZH1X9oPp3H">Drive folder</a>. Slack is the same door in the superuser chat. The row shows up in this book. On the superuser seat, the line next to team5pm opens the sheet.</p>
     <div class="cases">
       <button type="button" data-case="invoice">Clean invoice</button>
       <button type="button" data-case="invoice-again">Same file again</button>
