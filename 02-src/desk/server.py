@@ -15,6 +15,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlparse
 from urllib.request import Request, urlopen
 
+import hold
 from engine import alert_lines, extract_pdf, extract_word, is_word, marked, read_pages, read_word, review_problems
 from scan import scan_bytes
 
@@ -176,6 +177,9 @@ class Desk(BaseHTTPRequestHandler):
             return
         payload = self.rfile.read(length)
         content_type = self.headers.get("Content-Type", "")
+        if hold.updating() and not self.path.startswith("/extract"):
+            self.during_update(payload, content_type)
+            return
         if self.path.startswith("/extract"):
             self.extract_document(payload)
             return
@@ -438,6 +442,26 @@ class Desk(BaseHTTPRequestHandler):
         except RuntimeError:
             pass
         self._send(200, json.dumps({"message": message, "status": status, "document_id": document_id, "supersedes": supersedes}), "application/json")
+
+    def during_update(self, payload, content_type):
+        path = self.path.split("?", 1)[0]
+        if path.startswith("/confirm") or path.startswith("/review"):
+            self._send(200, json.dumps({"message": hold.ANSWER, "status": "updating", "kept": False}), "application/json")
+            return
+        if path.startswith("/case"):
+            self._send(200, json.dumps({"message": hold.CASE, "status": "updating", "kept": False}), "application/json")
+            return
+        data, name = file_bytes(payload, content_type)
+        if not data:
+            self._send(200, json.dumps({"message": hold.RETRY, "status": "updating", "kept": False}), "application/json")
+            return
+        hold.park(name, data, {
+            "person_id": form_field(payload, "as") or "andre",
+            "stated_type": form_field(payload, "stated_type") or "other",
+            "client": form_field(payload, "client"),
+            "door": "desk",
+        })
+        self._send(200, json.dumps({"message": hold.KEPT, "status": "updating", "kept": True}), "application/json")
 
     def log_message(self, fmt, *args):
         print(fmt % args)
@@ -785,6 +809,10 @@ def stack_status():
         "sheet_url": SHEET_STATE.get("url") or "",
         "unreadable_pages": counts.get("unreadable_pages"),
         "model_spend_usd": counts.get("model_spend_usd"),
+        "updating": hold.updating(),
+        "updating_message": hold.KEPT if hold.updating() else "",
+        "updating_retry": hold.RETRY if hold.updating() else "",
+        "updating_answer": hold.ANSWER if hold.updating() else "",
     }
 
 
@@ -818,8 +846,51 @@ def magic_kind(data):
     return ""
 
 
+def submit_parked(item):
+    boundary = "----docintelhold"
+    chunks = []
+
+    def add(field, value, filename=None, raw=None):
+        head = '--%s\r\nContent-Disposition: form-data; name="%s"' % (boundary, field)
+        if filename:
+            head += '; filename="%s"' % filename
+        head += "\r\n\r\n"
+        chunks.append(head.encode() + (raw if raw is not None else str(value).encode()) + b"\r\n")
+
+    add("data", "", filename=item.get("name") or "original", raw=item.get("data") or b"")
+    add("as", item.get("person_id") or "andre")
+    add("stated_type", item.get("stated_type") or "other")
+    add("client", item.get("client") or "")
+    chunks.append(("--%s--\r\n" % boundary).encode())
+    body = b"".join(chunks)
+    request = Request(
+        "http://127.0.0.1:%d/submit" % PORT,
+        data=body,
+        headers={"Content-Type": "multipart/form-data; boundary=%s" % boundary},
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=60) as response:
+            raw = response.read()
+            code = response.status
+    except HTTPError as err:
+        raw = err.read()
+        code = err.code
+    except URLError:
+        return 0, {}
+    try:
+        return code, json.loads(raw.decode() or "{}")
+    except json.JSONDecodeError:
+        return code, {"message": raw.decode("utf-8", "replace")}
+
+
 def alert_loop():
     while True:
+        try:
+            if not hold.updating():
+                hold.release(submit_parked)
+        except Exception:
+            pass
         try:
             sync_alerts()
         except Exception:

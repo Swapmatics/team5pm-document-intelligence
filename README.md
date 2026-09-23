@@ -58,4 +58,6 @@ Copy `.env.example` to `.env` and `04-run/.env.example` to `04-run/.env`. The we
 5. A file of ten pages or fewer sends one model call per page that has text. A longer file is grouped about ten pages at a time, one call at a time, with a second and a half between calls. A page with no text is read with Apple Vision. An empty page is held and named, and it is not sent on. A Word file is read as a Word file. A value keeps the page or section it came from, and a short excerpt. Two groups that disagree leave the field blank.
 6. A held row can be corrected on the desk. A changed invoice or contract waits for yes or no. Yes supersedes the old row and accepts the new one in one transaction.
 
+Before a restart, run `04-run/begin-update.sh`. While `04-run/updating` exists, the desk, Slack, mail, and Drive do not start a new read. A file is written under `04-run/held-during-update` or left where it arrived. Each door tells the person that an update is in progress and the desk is not offline. Run `04-run/end-update.sh` once the desk is answering. The next desk pass reads the files that were kept.
+
 The Google Sheet is a copy of those columns, split into Current, Held, Reading, and History. It is not the book. Each row links to a viewable copy of the file.

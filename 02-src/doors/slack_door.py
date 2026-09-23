@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Slack DM door. A file dropped in the chat uses the same desk intake as the browser."""
 
+import hold
 import json
 import os
 import re
@@ -184,6 +185,38 @@ def download_file(client, slack_file):
     return (data, name, mime), ""
 
 
+def say_in_chat(client, channel, text):
+    def post(message):
+        client.chat_postMessage(channel=channel, text=message)
+    hold.must_call(post, text)
+
+
+def during_update(event, client):
+    channel = event.get("channel") or ""
+    text = event.get("text") or ""
+    files = [item for item in (event.get("files") or []) if item.get("id")]
+    if files:
+        downloaded, error = download_file(client, files[0])
+        if downloaded:
+            data, name, mime = downloaded
+            stated, client_name = parse_instruction(text)
+            hold.park(name, data, {
+                "mime": mime,
+                "person_id": "andre",
+                "stated_type": stated or "other",
+                "client": client_name or "",
+                "door": "slack",
+            })
+            say_in_chat(client, channel, hold.KEPT)
+            return
+        say_in_chat(client, channel, hold.RETRY)
+        return
+    if decision_word(text):
+        say_in_chat(client, channel, hold.ANSWER)
+        return
+    say_in_chat(client, channel, hold.PAUSE)
+
+
 def handle_message(event, client):
     if event.get("bot_id") or event.get("subtype") in ("message_changed", "message_deleted", "bot_message"):
         return
@@ -191,6 +224,9 @@ def handle_message(event, client):
     channel = event.get("channel") or ""
     text = event.get("text") or ""
     if not user_id or not channel:
+        return
+    if hold.updating():
+        during_update(event, client)
         return
     person = person_for(user_id)
     if not person:

@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from slack_door import desk_json, encode_form, load_env, parse_instruction
+import hold
 
 ROOT = Path(__file__).resolve().parents[2]
 READABLE = {".pdf", ".png", ".jpg", ".jpeg", ".doc", ".docx"}
@@ -82,6 +83,8 @@ def mark(item_id, status, document_id, note):
 
 
 def admit_once(batch):
+    if hold.updating():
+        return {"admitted": 0, "paused": True}
     result = claim(batch)
     admitted = 0
     for item in result.get("claimed") or []:

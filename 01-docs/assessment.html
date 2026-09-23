@@ -417,6 +417,7 @@
         <li>Queue, worker, received then processing</li>
         <li>OCR, including a scan whose words are not a total</li>
         <li>A file longer than ten pages, in groups of about ten, one call at a time</li>
+        <li>An update flag. A new file is kept, and every door says the desk is not offline.</li>
         <li>Sheet copy, with a link to the file. Amounts stay on the sheet.</li>
         <li>Yes or no, and a correction on the desk</li>
         <li>Department views on the desk. Projects and accounts see no finance rows.</li>
@@ -671,7 +672,7 @@
   <p>A clean invoice comes back accepted, with the supplier, the invoice number, the total, and the page each value was found on. The same file comes back as the same document. A revised total comes back waiting, with the old total and the new one both named, and the current row left alone until a person answers. A contract with an empty second page comes back held, and the note names page 2. The parties and the effective date can still be cited. The file is not accepted.</p>
   <p>The brief’s file formats are a native-text PDF, a scanned image, and a Word document. The book has the PDF cases and one Word invoice, INV-3001, cited from section 1. A picture embedded in a Word file is read with the same OCR as a scanned page. It is not converted into a PDF first. A PNG or a JPEG uses the image route. There is no photo in this book.</p>
   <p>The demo mailbox is team5pmdocintel@gmail.com. For the demo it accepts a file from any sender, so the path can be tested. That is not the live rule. Once this is in production, the inbox accepts a file only when the From address is a company email address. Mail from any other domain is refused. It is not stored, and it is not sent to the model.</p>
-  <p>Production still replaces the link with a real login, and honours a real Retry-After. The holds and the hash are rows I can name. ClamAV runs before a file is opened. Slack, Drive, and the mailbox are running doors. I would rather show a hold I can explain than a login I have not built.</p>
+  <p>Production still replaces the link with a real login, and honours a real Retry-After. The holds and the hash are rows I can name. ClamAV runs before a file is opened. Slack, Drive, and the mailbox are running doors. Before a restart I set an update flag. While that flag is up, a new file on any door is kept and the person is told. The sentence is not optional. It says an update is in progress, the file is kept, and the desk is not offline. I would rather show a hold I can explain than a login I have not built.</p>
 </section>
 
 <section id="appendix">

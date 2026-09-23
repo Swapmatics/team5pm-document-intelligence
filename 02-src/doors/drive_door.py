@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 from slack_door import desk_json, encode_form, load_env, parse_instruction
+import hold
 
 ROOT = Path(__file__).resolve().parents[2]
 SEEN = ROOT / "04-run" / "drive-seen.json"
@@ -49,6 +50,23 @@ def poll():
         fields="files(id,name,mimeType)",
         pageSize=50,
     ).execute()
+    if hold.updating():
+        told = hold.told_ids()
+        readable = (
+            "application/pdf", "image/png", "image/jpeg", "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        for item in found.get("files") or []:
+            file_id = item.get("id")
+            if not file_id or file_id in told:
+                continue
+            if file_id == os.environ.get("DOCINTEL_DRIVE_LINKS_FOLDER", ""):
+                continue
+            if (item.get("mimeType") or "") not in readable:
+                continue
+            if hold.tell_slack(hold.DRIVE % (item.get("name") or "a file")):
+                hold.remember_told(file_id)
+        return
     known = seen_ids()
     for item in found.get("files") or []:
         file_id = item.get("id")

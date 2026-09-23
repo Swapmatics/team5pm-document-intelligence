@@ -12,6 +12,7 @@ from email.message import EmailMessage
 from email.utils import parseaddr
 
 from slack_door import desk_json, encode_form, load_env, parse_instruction
+import hold
 
 ROOT = __import__("pathlib").Path(__file__).resolve().parents[2]
 
@@ -179,17 +180,33 @@ def poll():
             if client is None:
                 client = ""
             lines = []
-            if not attachments:
-                lines.append("No file was attached, so nothing was stored.")
-            for name, mime, payload in attachments:
-                text, document_id = outcome_for(person, stated, client, name, mime, payload)
-                lines.append(text)
-                if document_id and not automated_sender(address):
-                    threading.Thread(
-                        target=follow_and_reply,
-                        args=(person["id"], document_id, name, address, subject, message_id),
-                        daemon=True,
-                    ).start()
+            if hold.updating():
+                if not attachments:
+                    lines.append(hold.PAUSE)
+                for name, mime, payload in attachments:
+                    if payload:
+                        hold.park(name, payload, {
+                            "mime": mime,
+                            "person_id": person["id"],
+                            "stated_type": stated or "other",
+                            "client": client or "",
+                            "door": "mail",
+                        })
+                        lines.append(name + "\n" + hold.KEPT)
+                    else:
+                        lines.append(hold.RETRY)
+            else:
+                if not attachments:
+                    lines.append("No file was attached, so nothing was stored.")
+                for name, mime, payload in attachments:
+                    text, document_id = outcome_for(person, stated, client, name, mime, payload)
+                    lines.append(text)
+                    if document_id and not automated_sender(address):
+                        threading.Thread(
+                            target=follow_and_reply,
+                            args=(person["id"], document_id, name, address, subject, message_id),
+                            daemon=True,
+                        ).start()
             if lines and not automated_sender(address):
                 try:
                     send_reply(address, subject, message_id, "\n\n".join(lines))

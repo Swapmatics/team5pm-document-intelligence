@@ -4,6 +4,9 @@
 04-run/logs/
 04-run/drive-seen.json
 04-run/file-links.json
+04-run/updating
+04-run/update-told.json
+04-run/held-during-update/
 04-run/n8n-runtime/
 04-run/ocr-vision
 04-run/n8n-data/

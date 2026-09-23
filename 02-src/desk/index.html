@@ -351,13 +351,26 @@ async function submitReview(documentId, form) {
   form.querySelectorAll('input[name="ack"]').forEach(function (box) {
     if (box.checked) ack.push(Number(box.value));
   });
-  const res = await fetch('/review', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ as: person ? person.id : '', document_id: documentId, fields: fields, ack_pages: ack }),
-  });
-  const data = await res.json();
+  let res;
+  try {
+    res = await fetch('/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ as: person ? person.id : '', document_id: documentId, fields: fields, ack_pages: ack }),
+    });
+  } catch (e) {
+    say(updateState.on ? updateState.answer : 'The desk did not answer. I did not record that correction.');
+    return;
+  }
+  let data = {};
+  try {
+    data = await res.json();
+  } catch (e) {
+    say(updateState.on ? updateState.answer : 'The desk did not answer. I did not record that correction.');
+    return;
+  }
   say(data.message || 'No reply.');
+  if (data.status === 'updating') return;
   if (data.status && data.status !== 'held') {
     form.remove();
     delete reviewFor[documentId];
@@ -392,6 +405,7 @@ function syncConfirms(book) {
     confirmFor[id] = wrap;
   });
 }
+let updateState = { on: false, kept: '', retry: '', answer: '' };
 async function refresh() {
   try {
     const book = await loadBook();
@@ -408,14 +422,20 @@ async function refresh() {
       err.className = 'msg';
       thread.prepend(err);
     }
-    err.textContent = 'The record book did not load. I am not treating this screen as current.';
+    err.textContent = updateState.on
+      ? updateState.kept
+      : 'The record book did not load. I am not treating this screen as current.';
   }
 }
 async function confirm(documentId, decision) {
-  const res = await fetch('/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ document_id: documentId, decision: decision, as: person ? person.id : '' }) });
-  const data = await res.json();
-  say(data.message || 'No reply.');
-  await refresh();
+  try {
+    const res = await fetch('/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ document_id: documentId, decision: decision, as: person ? person.id : '' }) });
+    const data = await res.json();
+    say(data.message || 'No reply.');
+    if (data.status !== 'updating') await refresh();
+  } catch (e) {
+    say(updateState.on ? updateState.answer : 'The desk did not answer. I did not record that answer. Send it again.');
+  }
 }
 const drop = document.getElementById('drop');
 drop.addEventListener('dragover', function (event) { event.preventDefault(); drop.classList.add('over'); });
@@ -445,11 +465,15 @@ async function handleFile(file) {
   body.append('as', person.id);
   body.append('stated_type', stated);
   body.append('client', client.toLowerCase() === 'none' ? '' : client);
-  say('Reading it now.');
-  const res = await fetch('/submit', { method: 'POST', body: body });
-  const data = await res.json();
-  say(data.message || 'No reply.');
-  await refresh();
+  if (!updateState.on) say('Reading it now.');
+  try {
+    const res = await fetch('/submit', { method: 'POST', body: body });
+    const data = await res.json();
+    say(data.message || 'No reply.');
+    if (data.status !== 'updating') await refresh();
+  } catch (e) {
+    say(updateState.on ? updateState.retry : 'The desk did not answer. I did not take that file. It is still with you.');
+  }
 }
 const EXPECT = {
   invoice: { label: 'Clean invoice', status: 'accepted', reference_number: 'INV-1001', total_amount: '12500.00', currency: 'ZAR', document_date: '2026-03-01' },
@@ -493,6 +517,11 @@ async function runCase(name) {
     say('This chat does not say who you are, so I will not run that case.');
     return;
   }
+  if (updateState.on) {
+    box.textContent = 'An update is in progress. I did not run that case. The desk is not offline.';
+    say(box.textContent);
+    return;
+  }
   box.textContent = expect.label + ' is running.';
   say('Running ' + expect.label + '.', true);
   const res = await fetch('/case', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ as: person.id, name: name }) });
@@ -533,10 +562,21 @@ async function loadStatus() {
     const res = await fetch('/status?as=' + encodeURIComponent(seat));
     if (!res.ok) { el.textContent = 'Status did not load.'; return; }
     const data = await res.json();
+    if (data.updating) {
+      updateState = {
+        on: true,
+        kept: data.updating_message || '',
+        retry: data.updating_retry || '',
+        answer: data.updating_answer || '',
+      };
+    } else {
+      updateState = { on: false, kept: '', retry: '', answer: '' };
+    }
     const bit = function (name, up) { return name + (up ? ' up' : ' down'); };
     const spend = data.model_spend_usd == null ? 'spend unknown' : ('spend $' + data.model_spend_usd + ' today');
     const unread = data.unreadable_pages == null ? 'unreadable pages unknown' : (data.unreadable_pages + ' pages could not be read');
     let line = [bit('n8n', data.n8n), bit('ledger', data.ledger), bit('redis', data.redis), bit('bucket', data.bucket), data.sheet ? 'sheet up' : 'sheet not connected', spend, unread].join(' · ');
+    if (data.updating && data.updating_message) line = data.updating_message + ' · ' + line;
     const alerts = await fetch('/alerts?as=' + encodeURIComponent(seat));
     if (alerts.ok) {
       const alertData = await alerts.json();
@@ -553,7 +593,7 @@ async function loadStatus() {
       el.appendChild(link);
     }
   } catch (e) {
-    el.textContent = 'Status did not load.';
+    el.textContent = updateState.on ? updateState.kept : 'Status did not load.';
   }
 }
 loadStatus();
