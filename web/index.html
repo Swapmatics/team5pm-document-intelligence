@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>team5pm · document intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --black: #000;
+    --ink: #fff;
+    --muted: #b9b9b9;
+    --gold: #ffd400;
+    --orange: #ff6400;
+    --line: rgba(255, 255, 255, 0.16);
+    --panel: #111;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: 0.3px;
+    color: var(--ink);
+    background: var(--black);
+  }
+  main { display: grid; grid-template-columns: 1.25fr 0.75fr; min-height: 100vh; }
+  section { padding: 32px 36px; }
+  .book { border-left: 1px solid var(--line); background: #050505; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: Inter, sans-serif; font-weight: 500; letter-spacing: 0; }
+  .mark {
+    width: 0; height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 12px solid var(--ink);
+  }
+  h1 {
+    margin: 28px 0 12px;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 400;
+    font-size: 52px;
+    line-height: 0.95;
+    letter-spacing: -1.2px;
+    text-transform: lowercase;
+  }
+  h1 em { font-style: normal; color: var(--gold); }
+  p.who { margin: -8px 0 18px; color: var(--gold); }
+  #thread { display: flex; flex-direction: column; gap: 10px; min-height: 180px; }
+  .msg { max-width: 40rem; padding: 14px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); }
+  .msg.me { align-self: flex-end; background: #1a1a1a; border-color: rgba(255, 212, 0, 0.45); }
+  form.drop {
+    margin-top: 18px;
+    border: 1px dashed var(--gold);
+    border-radius: 20px;
+    padding: 20px;
+    background: #0a0a0a;
+  }
+  form.drop.over { background: #1a1600; }
+  form.drop p { margin: 0 0 12px; }
+  label.file {
+    display: inline-flex;
+    align-items: center;
+    background: var(--orange);
+    color: #fff;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  label.file input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  input[type="text"], form.msg input {
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    color: var(--ink);
+    background: #000;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin: 8px 8px 0 0;
+  }
+  input:focus { outline: 2px solid var(--gold); border-color: transparent; }
+  button {
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--orange);
+    color: #fff;
+    border: 0;
+    border-radius: 20px;
+    padding: 10px 18px;
+    cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .book h2 {
+    margin: 22px 0 8px;
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -0.6px;
+    text-transform: lowercase;
+  }
+  .book h2:first-child { margin-top: 0; }
+  .book article { border-top: 1px solid var(--line); padding: 12px 0; }
+  .book article dl { display: grid; grid-template-columns: 11rem 1fr; gap: 2px 12px; margin: 8px 0 0; }
+  .book dt { color: var(--muted); font-size: 13px; }
+  .book dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+  .book a { color: var(--gold); }
+  .book small { display: block; color: var(--gold); margin-top: 2px; }
+  .empty { color: var(--muted); }
+  .cases { margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .cases button { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  #case-result { margin: 8px 0 0; color: var(--muted); }
+  #status { margin: 0 0 8px; color: var(--gold); font-size: 14px; }
+  @media (max-width: 800px) {
+    main { grid-template-columns: 1fr; }
+    .book { border-left: 0; border-top: 1px solid var(--line); }
+    h1 { font-size: 40px; }
+    section { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <div class="brand"><span class="mark" aria-hidden="true"></span> team5pm</div>
+    <h1>document <em>intelligence</em></h1>
+    <p class="lead">Drop a PDF here, or run a case. Nothing is written as final until the checks pass, and you will hear that in this thread.</p>
+    <p id="status"></p>
+    <div class="cases">
+      <button type="button" data-case="invoice">Clean invoice</button>
+      <button type="button" data-case="invoice-again">Same file again</button>
+      <button type="button" data-case="invoice-revised">Revised invoice</button>
+      <button type="button" data-case="contract-blank">Blank page</button>
+    </div>
+    <p id="case-result"></p>
+    <p id="who" class="who"></p>
+    <div id="thread"></div>
+    <form class="drop" id="drop">
+      <p>Drop a PDF, or choose one. I already know who this chat is. I will ask what the file is, not who you are.</p>
+      <label class="file">choose a file
+        <input id="file" type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,.doc,.docx">
+      </label>
+    </form>
+  </section>
+  <section class="book">
+    <h2>Reading</h2>
+    <div id="reading"></div>
+    <h2>Current</h2>
+    <div id="current"></div>
+    <h2>Held</h2>
+    <div id="held"></div>
+    <h2>History</h2>
+    <div id="history"></div>
+  </section>
+</main>
+<script>
+const thread = document.getElementById('thread');
+const seat = new URLSearchParams(location.search).get('as') || '';
+let person = null;
+const seenBot = {};
+const confirmFor = {};
+function say(text, mine) {
+  if (!mine) {
+    if (seenBot[text]) return;
+    seenBot[text] = true;
+  }
+  const el = document.createElement('div');
+  el.className = 'msg' + (mine ? ' me' : '');
+  el.textContent = text;
+  thread.appendChild(el);
+  el.scrollIntoView({ block: 'nearest' });
+}
+function ask(prompt) {
+  return new Promise(function (resolve) {
+    const form = document.createElement('form');
+    form.className = 'msg';
+    const label = document.createElement('div');
+    label.textContent = prompt;
+    const input = document.createElement('input');
+    input.required = true;
+    input.style.margin = '8px 8px 0 0';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Send';
+    form.append(label, input, button);
+    form.onsubmit = function (event) {
+      event.preventDefault();
+      const value = input.value.trim();
+      form.remove();
+      say(value, true);
+      resolve(value);
+    };
+    thread.appendChild(form);
+    input.focus();
+  });
+}
+const COLUMNS = ['document_id','content_sha256','original_filename','storage_key','mime_type','page_count','submitted_by','submitted_at','department','stated_type','resolved_type','client_or_vendor_stated','client_or_vendor_resolved','title','parties','counterparty','document_date','effective_date','expiry_date','currency','total_amount','reference_number','why_it_exists','what_changed','page_notes','status','supersedes','superseded_by','validation_notes','model_route','reviewed_by','reviewed_at','accepted_at','field_evidence'];
+function card(row) {
+  const el = document.createElement('article');
+  const title = document.createElement('strong');
+  title.textContent = (row.reference_number || row.title || row.document_id) + ' · ' + (row.stated_type || '');
+  const dl = document.createElement('dl');
+  const excerpts = evidenceMap(row);
+  COLUMNS.forEach(function (key) {
+    if (!Object.prototype.hasOwnProperty.call(row, key)) return;
+    const dt = document.createElement('dt');
+    dt.textContent = key;
+    const dd = document.createElement('dd');
+    if (key === 'storage_key' && row.document_id && row.storage_key) {
+      const link = document.createElement('a');
+      link.href = '/file?as=' + encodeURIComponent(seat) + '&document_id=' + encodeURIComponent(row.document_id);
+      link.textContent = String(row.storage_key);
+      dd.appendChild(link);
+    } else {
+      const value = row[key];
+      const shown = value === null || value === undefined || value === '' ? '—' : String(value);
+      dd.textContent = excerpts[key] ? shown + ' — ' + excerpts[key] : shown;
+    }
+    dl.append(dt, dd);
+  });
+  el.append(title, dl);
+  return el;
+}
+async function loadBook() {
+  const res = await fetch('/records?as=' + encodeURIComponent(seat));
+  if (!res.ok) throw new Error('records');
+  const book = await res.json();
+  for (const id of ['reading', 'current', 'held', 'history']) {
+    const box = document.getElementById(id);
+    box.replaceChildren();
+    box.className = '';
+    const rows = book[id] || [];
+    if (!rows.length) { box.textContent = 'Nothing here.'; box.className = 'empty'; }
+    rows.forEach(function (row) { box.appendChild(card(row)); });
+  }
+  return book;
+}
+async function loadThread() {
+  const res = await fetch('/thread?as=' + encodeURIComponent(seat));
+  if (!res.ok) throw new Error('thread');
+  const data = await res.json();
+  (data.lines || []).forEach(function (line) { if (line.body) say(line.body, false); });
+}
+const reviewFor = {};
+const reviewRows = {};
+function evidenceMap(row) {
+  let list = [];
+  try { list = JSON.parse(row.field_evidence || '[]'); } catch (e) { list = []; }
+  const map = {};
+  (Array.isArray(list) ? list : []).forEach(function (item) {
+    if (item && item.field && item.excerpt && !map[item.field]) map[item.field] = item.excerpt;
+  });
+  return map;
+}
+function fieldInput(name, value, excerpt) {
+  const wrap = document.createElement('label');
+  wrap.style.display = 'block';
+  wrap.style.marginTop = '8px';
+  wrap.append(document.createTextNode(name.replace(/_/g, ' ')));
+  if (excerpt) {
+    const note = document.createElement('small');
+    note.style.display = 'block';
+    note.textContent = excerpt;
+    wrap.appendChild(note);
+  }
+  const input = document.createElement('input');
+  input.name = name;
+  input.value = value || '';
+  input.style.display = 'block';
+  input.style.width = '100%';
+  input.style.marginTop = '4px';
+  const page = document.createElement('input');
+  page.name = name + '_page';
+  page.placeholder = 'page';
+  page.style.width = '80px';
+  page.style.marginTop = '4px';
+  wrap.append(input, page);
+  return wrap;
+}
+function syncReviews(book) {
+  const waiting = {};
+  (book.held || []).forEach(function (row) {
+    if (row.status === 'held' && row.document_id) waiting[row.document_id] = row;
+  });
+  Object.keys(reviewFor).forEach(function (id) {
+    if (!waiting[id]) {
+      reviewFor[id].remove();
+      delete reviewFor[id];
+      delete reviewRows[id];
+    }
+  });
+  Object.keys(waiting).forEach(function (id) {
+    if (reviewFor[id]) return;
+    const row = waiting[id];
+    const form = document.createElement('form');
+    form.className = 'msg';
+    const title = document.createElement('div');
+    title.textContent = 'Review ' + (row.reference_number || row.document_id) + '. A value needs the page it came from. This does not read the file again.';
+    form.appendChild(title);
+    const names = ['parties', 'counterparty', 'reference_number', 'currency', 'total_amount', 'document_date', 'effective_date', 'title', 'why_it_exists'];
+    const excerpts = evidenceMap(row);
+    names.forEach(function (name) { form.appendChild(fieldInput(name, row[name], excerpts[name] || '')); });
+    const pages = String(row.page_notes || '').match(/Page (\d+)/g) || [];
+    pages.forEach(function (label) {
+      const page = label.replace('Page ', '');
+      const labelEl = document.createElement('label');
+      labelEl.style.display = 'block';
+      labelEl.style.marginTop = '8px';
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.name = 'ack';
+      box.value = page;
+      labelEl.append(box, document.createTextNode(' I looked at page ' + page + '. It still has no text.'));
+      form.appendChild(labelEl);
+    });
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Save this review';
+    button.style.marginTop = '8px';
+    form.appendChild(button);
+    form.onsubmit = function (event) {
+      event.preventDefault();
+      submitReview(row.document_id, form);
+    };
+    thread.appendChild(form);
+    reviewFor[id] = form;
+    reviewRows[id] = row;
+  });
+}
+async function submitReview(documentId, form) {
+  const fields = {};
+  const names = ['parties', 'counterparty', 'reference_number', 'currency', 'total_amount', 'document_date', 'effective_date', 'title', 'why_it_exists'];
+  names.forEach(function (name) {
+    const value = (form.elements[name].value || '').trim();
+    const page = (form.elements[name + '_page'].value || '').trim();
+    const original = String((reviewRows[documentId] || {})[name] || '').trim();
+    if (page || value !== original) fields[name] = { value: value, page: page };
+  });
+  const ack = [];
+  form.querySelectorAll('input[name="ack"]').forEach(function (box) {
+    if (box.checked) ack.push(Number(box.value));
+  });
+  const res = await fetch('/review', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ as: person ? person.id : '', document_id: documentId, fields: fields, ack_pages: ack }),
+  });
+  const data = await res.json();
+  say(data.message || 'No reply.');
+  if (data.status && data.status !== 'held') {
+    form.remove();
+    delete reviewFor[documentId];
+    delete reviewRows[documentId];
+  }
+  await refresh();
+}
+function syncConfirms(book) {
+  const waiting = {};
+  (book.held || []).forEach(function (row) {
+    if (row.status === 'awaiting_confirm' && row.document_id) waiting[row.document_id] = row;
+  });
+  Object.keys(confirmFor).forEach(function (id) {
+    if (!waiting[id]) {
+      confirmFor[id].remove();
+      delete confirmFor[id];
+    }
+  });
+  Object.keys(waiting).forEach(function (id) {
+    if (confirmFor[id]) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'msg';
+    const yes = document.createElement('button');
+    yes.textContent = 'Yes, replace it';
+    const no = document.createElement('button');
+    no.className = 'ghost';
+    no.textContent = 'No, leave it held';
+    yes.onclick = function () { confirm(id, 'yes'); };
+    no.onclick = function () { confirm(id, 'no'); };
+    wrap.append(yes, document.createTextNode(' '), no);
+    thread.appendChild(wrap);
+    confirmFor[id] = wrap;
+  });
+}
+async function refresh() {
+  try {
+    const book = await loadBook();
+    await loadThread();
+    syncConfirms(book);
+    syncReviews(book);
+    const err = document.getElementById('sync-error');
+    if (err) err.remove();
+  } catch (e) {
+    let err = document.getElementById('sync-error');
+    if (!err) {
+      err = document.createElement('div');
+      err.id = 'sync-error';
+      err.className = 'msg';
+      thread.prepend(err);
+    }
+    err.textContent = 'The record book did not load. I am not treating this screen as current.';
+  }
+}
+async function confirm(documentId, decision) {
+  const res = await fetch('/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ document_id: documentId, decision: decision, as: person ? person.id : '' }) });
+  const data = await res.json();
+  say(data.message || 'No reply.');
+  await refresh();
+}
+const drop = document.getElementById('drop');
+drop.addEventListener('dragover', function (event) { event.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', function () { drop.classList.remove('over'); });
+drop.addEventListener('drop', function (event) {
+  event.preventDefault();
+  drop.classList.remove('over');
+  const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+document.getElementById('file').addEventListener('change', function () {
+  const file = this.files && this.files[0];
+  this.value = '';
+  if (file) handleFile(file);
+});
+async function handleFile(file) {
+  if (!person) {
+    say('This chat does not say who you are, so I will not read the file.');
+    return;
+  }
+  say('Dropped ' + file.name + '.', true);
+  say('I have the file from ' + person.label + '. It is not on the record yet.');
+  const stated = (await ask('What type is it: invoice, contract, brief, or other?')).toLowerCase();
+  const client = await ask('Which client or vendor is it for? Say none if you do not have one.');
+  const body = new FormData();
+  body.append('data', file, file.name);
+  body.append('as', person.id);
+  body.append('stated_type', stated);
+  body.append('client', client.toLowerCase() === 'none' ? '' : client);
+  say('Reading it now.');
+  const res = await fetch('/submit', { method: 'POST', body: body });
+  const data = await res.json();
+  say(data.message || 'No reply.');
+  await refresh();
+}
+const EXPECT = {
+  invoice: { label: 'Clean invoice', status: 'accepted', reference_number: 'INV-1001', total_amount: '12500.00', currency: 'ZAR', document_date: '2026-03-01' },
+  'invoice-again': { label: 'Same file again', status: 'identical' },
+  'invoice-revised': { label: 'Revised invoice', status: 'awaiting_confirm', total_amount: '18000.00', reference_number: 'INV-1001' },
+  'contract-blank': { label: 'Blank page', status: 'held', page_has: 'Page 2' },
+};
+function findRow(book, id) {
+  const keys = ['reading', 'current', 'held', 'history'];
+  for (let k = 0; k < keys.length; k++) {
+    const rows = book[keys[k]] || [];
+    for (let i = 0; i < rows.length; i++) if (rows[i].document_id === id) return rows[i];
+  }
+  return null;
+}
+function caseMisses(name, reply, row) {
+  const expect = EXPECT[name];
+  const status = (row && row.status) || reply.status || '';
+  const misses = [];
+  if (status !== expect.status) misses.push('status is ' + (status || 'missing') + ', this case wants ' + expect.status);
+  if (expect.status === 'identical') return misses;
+  if (!row) {
+    misses.push('the read did not finish');
+    return misses;
+  }
+  ['reference_number', 'total_amount', 'currency', 'document_date'].forEach(function (key) {
+    if (expect[key] && String(row[key] || '') !== expect[key]) misses.push(key.replace(/_/g, ' ') + ' is ' + (row[key] || 'blank'));
+  });
+  if (expect.page_has && String(row.page_notes || '').indexOf(expect.page_has) === -1) misses.push('the note does not name ' + expect.page_has);
+  return misses;
+}
+async function runCase(name) {
+  const box = document.getElementById('case-result');
+  const expect = EXPECT[name];
+  if (!person) {
+    say('This chat does not say who you are, so I will not run that case.');
+    return;
+  }
+  box.textContent = expect.label + ' is running.';
+  say('Running ' + expect.label + '.', true);
+  const res = await fetch('/case', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ as: person.id, name: name }) });
+  const reply = await res.json();
+  say(reply.message || 'No reply.');
+  let row = null;
+  const already = reply.status === 'identical' && name !== 'invoice-again';
+  if (reply.document_id && already) {
+    const bookRes = await fetch('/records?as=' + encodeURIComponent(seat));
+    if (bookRes.ok) row = findRow(await bookRes.json(), reply.document_id);
+  } else if (reply.document_id && reply.status !== 'identical') {
+    const deadline = Date.now() + 180000;
+    while (Date.now() < deadline) {
+      await new Promise(function (resolve) { setTimeout(resolve, 2000); });
+      const bookRes = await fetch('/records?as=' + encodeURIComponent(seat));
+      if (!bookRes.ok) continue;
+      row = findRow(await bookRes.json(), reply.document_id);
+      if (row && row.status !== 'received' && row.status !== 'processing') break;
+    }
+  }
+  await refresh();
+  const misses = caseMisses(name, reply, row);
+  const line = misses.length
+    ? expect.label + ' did not match. ' + misses.join('. ') + '.'
+    : already
+      ? expect.label + ' is already on the book. Status ' + (row && row.status) + '. It matches.'
+      : expect.label + ' matched. Status ' + ((row && row.status) || reply.status) + '.';
+  box.textContent = line;
+  say(line);
+}
+document.querySelectorAll('[data-case]').forEach(function (button) {
+  button.addEventListener('click', function () { runCase(button.getAttribute('data-case')); });
+});
+async function loadStatus() {
+  const el = document.getElementById('status');
+  if (!seat) { el.textContent = ''; return; }
+  try {
+    const res = await fetch('/status?as=' + encodeURIComponent(seat));
+    if (!res.ok) { el.textContent = 'Status did not load.'; return; }
+    const data = await res.json();
+    const bit = function (name, up) { return name + (up ? ' up' : ' down'); };
+    const spend = data.model_spend_usd == null ? 'spend unknown' : ('spend $' + data.model_spend_usd + ' today');
+    const unread = data.unreadable_pages == null ? 'unreadable pages unknown' : (data.unreadable_pages + ' pages could not be read');
+    let line = [bit('n8n', data.n8n), bit('ledger', data.ledger), bit('redis', data.redis), bit('bucket', data.bucket), data.sheet ? 'sheet up' : 'sheet not connected', spend, unread].join(' · ');
+    const alerts = await fetch('/alerts?as=' + encodeURIComponent(seat));
+    if (alerts.ok) {
+      const alertData = await alerts.json();
+      (alertData.alerts || []).forEach(function (item) { line += ' · ' + item.body; });
+    }
+    el.textContent = '';
+    el.append(document.createTextNode(line));
+    if (data.sheet_url) {
+      el.append(document.createTextNode(' · '));
+      const link = document.createElement('a');
+      link.href = data.sheet_url;
+      link.textContent = 'open the sheet';
+      link.style.color = 'var(--gold)';
+      el.appendChild(link);
+    }
+  } catch (e) {
+    el.textContent = 'Status did not load.';
+  }
+}
+loadStatus();
+setInterval(loadStatus, 15000);
+loadPerson();
+async function loadPerson() {
+  const who = document.getElementById('who');
+  if (!seat) {
+    who.textContent = 'No person on this link.';
+    document.getElementById('drop').hidden = true;
+    say('This page does not know who you are. Open your own link. I will not ask for a name or a department.');
+    return;
+  }
+  const res = await fetch('/who?as=' + encodeURIComponent(seat));
+  if (!res.ok) {
+    who.textContent = 'This link is not on the staff map.';
+    document.getElementById('drop').hidden = true;
+    say('This link is not on the staff map, so I will not take a file.');
+    return;
+  }
+  person = await res.json();
+  who.textContent = person.label;
+  say('This chat is ' + person.label + '. The record book is the same one every door writes.');
+}
+refresh();
+setInterval(refresh, 4000);
+</script>
+</body>
+</html>

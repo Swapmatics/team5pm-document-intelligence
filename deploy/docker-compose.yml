@@ -1,0 +1,78 @@
+name: docintel
+
+# Postgres, Redis, and MinIO stay in this VM. The queue-mode n8n main and worker
+# run on the host (deploy/n8n.sh). A second n8n container is killed for memory
+# on this small VM, which already runs another n8n.
+
+services:
+  docintel-postgres:
+    image: postgres:16-alpine
+    container_name: docintel-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+      N8N_DB_PASSWORD: ${N8N_DB_PASSWORD}
+      DOCINTEL_DB_PASSWORD: ${DOCINTEL_DB_PASSWORD}
+    ports:
+      - "127.0.0.1:5436:5432"
+    volumes:
+      - docintel_pg:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+      - ./ledger.sql:/ledger.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  docintel-redis:
+    image: redis:7-alpine
+    container_name: docintel-redis
+    ports:
+      - "127.0.0.1:6381:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  docintel-minio:
+    image: minio/minio:latest
+    container_name: docintel-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:9002:9000"
+      - "127.0.0.1:9003:9001"
+    volumes:
+      - docintel_minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  docintel-minio-init:
+    image: minio/mc:latest
+    container_name: docintel-minio-init
+    depends_on:
+      docintel-minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mc alias set local http://docintel-minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb -p local/docintel-originals || true
+        mc anonymous set none local/docintel-originals
+        echo bucket-ready
+
+volumes:
+  docintel_pg:
+  docintel_minio:

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Document intelligence — team5pm</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 16mm 16mm 16mm;
+    @top-left {
+      content: "team5pm  ·  document intelligence";
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8.5pt;
+      letter-spacing: 0.04em;
+      color: #78716c;
+    }
+    @top-right {
+      content: "Confidential";
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8.5pt;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #78716c;
+    }
+    @bottom-right {
+      content: counter(page);
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 9pt;
+      color: #78716c;
+    }
+  }
+  @page :first {
+    margin: 0;
+    @top-left { content: none; }
+    @top-right { content: none; }
+    @bottom-right { content: none; }
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: #1c1917;
+    background: #fff;
+    font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+
+  .cover {
+    height: 297mm;
+    padding: 28mm 22mm 22mm;
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    background: #fff;
+  }
+  .cover .brand {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .cover .rule {
+    width: 42mm;
+    height: 3px;
+    background: #9a3412;
+    margin: 8mm 0 14mm;
+  }
+  .cover h1 {
+    margin: 0;
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    font-size: 38pt;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+  .cover .sub {
+    margin: 8mm 0 0;
+    max-width: 120mm;
+    font-size: 14pt;
+    line-height: 1.35;
+    color: #44403c;
+  }
+  .cover .meta {
+    margin-top: auto;
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.6;
+    color: #44403c;
+  }
+  .cover .meta strong { color: #1c1917; font-weight: 600; }
+
+  h2 {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 16pt;
+    letter-spacing: -0.02em;
+    margin: 0 0 3mm;
+    page-break-after: avoid;
+    line-height: 1.15;
+  }
+  h3 {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 12pt;
+    margin: 6mm 0 2mm;
+    page-break-after: avoid;
+  }
+  p { margin: 0 0 3.2mm; orphans: 3; widows: 3; }
+  .lead { font-size: 12pt; }
+  .kicker {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 8.5pt;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #9a3412;
+    font-weight: 600;
+    margin: 0 0 2mm;
+    page-break-after: avoid;
+  }
+  section { margin: 0 0 8mm; }
+  a { color: #1c1917; }
+
+  ul, ol { margin: 0 0 3.5mm; padding-left: 5mm; }
+  li { margin: 0 0 1.4mm; }
+  li strong { font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 600; font-size: 10.5pt; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2mm 0 4mm;
+    page-break-inside: avoid;
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 8.7pt;
+    line-height: 1.35;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 2mm 2.4mm;
+    border-bottom: 0.4pt solid #e7e5e4;
+  }
+  th {
+    font-weight: 600;
+    font-size: 8pt;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #57534e;
+    border-bottom: 1pt solid #1c1917;
+  }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+
+  figure {
+    margin: 3mm 0 5mm;
+    page-break-inside: avoid;
+  }
+  figcaption {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 8.5pt;
+    color: #57534e;
+    margin-top: 1.5mm;
+  }
+  svg { display: block; width: 100%; height: auto; }
+  .boxtext {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .note {
+    border-left: 2.5pt solid #9a3412;
+    padding: 2.5mm 0 2.5mm 4mm;
+    margin: 3mm 0 4mm;
+    page-break-inside: avoid;
+  }
+  .note p:last-child { margin-bottom: 0; }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5mm;
+    margin: 2mm 0 4mm;
+    page-break-inside: avoid;
+  }
+  .panel {
+    border: 0.6pt solid #d6d3d1;
+    padding: 3.5mm 4mm 2mm;
+  }
+  .panel h3 { margin-top: 0; }
+  .panel ul { padding-left: 4mm; }
+  .tag {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 8pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .tag.run { color: #1c1917; }
+  .tag.wait { color: #9a3412; }
+
+  .qa { page-break-inside: avoid; margin: 0 0 4.5mm; }
+  .qa h3 { margin-bottom: 1.5mm; }
+
+  .endnote {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9pt;
+    line-height: 1.45;
+    color: #44403c;
+  }
+  .endnote p { margin-bottom: 2mm; }
+  table.dense td, table.dense th { padding: 1.25mm 2mm; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="brand">team5pm · Cape Town</div>
+  <div class="rule"></div>
+  <h1>Document<br>intelligence</h1>
+  <p class="sub">How a file becomes a record, and when it must stop before it does.</p>
+  <div class="meta">
+    <strong>Andre Naidoo</strong><br>
+    Technical assessment · September 2026<br>
+    Desk on this machine · 127.0.0.1:8787<br><br>
+    Confidential
+  </div>
+</section>
+
+<section>
+  <p class="kicker">The job</p>
+  <h2>A wrong total, written as final, is the failure</h2>
+  <p class="lead">A run that stops and says why is a success. That is the policy. The rest of this document is how I keep it true when nobody is watching, and how I prove it on the desk.</p>
+  <p>The file can be a contract, an invoice, a brief, or a signed agreement. Someone drops it. The system has to say what it is, who it is with, what it is worth, and when it applies. If it cannot say that from the page, it holds the file. It does not fill the gap.</p>
+  <p>Five rules sit under every step.</p>
+  <ol>
+    <li>A required value is kept only when it is on a page I can point at.</li>
+    <li>Every failure ends in a state a person can see. There is no path that continues with a hole.</li>
+    <li>The file can sit unattended. Received is not approved.</li>
+    <li>The thread and the row say what happened, and neither can be quietly overwritten.</li>
+    <li>Who the person is, and which rows they may see, are two different checks.</li>
+  </ol>
+  <p>A document is done when the file is stored, the identity is settled, the read has finished, the required fields have passed, each of those fields has a page, the duplicate and revision checks have passed, the current-row write has committed, the downstream view has been updated or queued, and an audit line has been written. A green execution in n8n is not that list. n8n decides the next step. It does not own the rows or the files.</p>
+  <div class="note">
+    <p>The desk proves the state changes that matter: a clean invoice, the same file twice, a revised total, and a blank page. Production is the same machine with a malware scan, a real login, OCR, page chunks, and doors in Slack, Drive, and a mailbox. I have not built those doors, and I do not describe them as running.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">The life of a row</p>
+  <h2>Received, then a decision</h2>
+  <p>The database row starts as received. The worker claims it as processing. From there it becomes accepted, held, or waiting. Accepted with nothing pointing at a newer row is current. Waiting is a yes or a no. Silence stays waiting.</p>
+
+  <figure>
+    <svg viewBox="0 0 680 258" xmlns="http://www.w3.org/2000/svg">
+      <rect x="250" y="0" width="180" height="32" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="340" y="21" text-anchor="middle" font-size="12" font-weight="600">RECEIVED</text>
+      <path d="M340 32 V46" stroke="#1c1917" stroke-width="1.2"/>
+      <polygon points="336,46 344,46 340,54" fill="#1c1917"/>
+      <rect x="250" y="54" width="180" height="32" rx="4" fill="#fafaf9" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="340" y="75" text-anchor="middle" font-size="12" font-weight="600">PROCESSING</text>
+      <path d="M280 86 V104 H110 V118" stroke="#1c1917" stroke-width="1.1" fill="none"/>
+      <path d="M340 86 V118" stroke="#1c1917" stroke-width="1.1"/>
+      <path d="M400 86 V104 H570 V118" stroke="#1c1917" stroke-width="1.1" fill="none"/>
+      <polygon points="106,118 114,118 110,126" fill="#1c1917"/>
+      <polygon points="336,118 344,118 340,126" fill="#1c1917"/>
+      <polygon points="566,118 574,118 570,126" fill="#1c1917"/>
+      <rect x="20" y="126" width="180" height="46" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="110" y="146" text-anchor="middle" font-size="12" font-weight="600">ACCEPTED</text>
+      <text class="boxtext" x="110" y="162" text-anchor="middle" font-size="10" fill="#57534e">current, until replaced</text>
+      <rect x="250" y="126" width="180" height="46" rx="4" fill="#fff7ed" stroke="#9a3412" stroke-width="1.4"/>
+      <text class="boxtext" x="340" y="146" text-anchor="middle" font-size="12" font-weight="600">HELD</text>
+      <text class="boxtext" x="340" y="162" text-anchor="middle" font-size="10" fill="#57534e">review, reason on the row</text>
+      <rect x="480" y="126" width="180" height="46" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="570" y="146" text-anchor="middle" font-size="12" font-weight="600">WAITING</text>
+      <text class="boxtext" x="570" y="162" text-anchor="middle" font-size="10" fill="#57534e">yes or no, not silence</text>
+      <text class="boxtext" x="570" y="192" text-anchor="middle" font-size="10" fill="#57534e">Yes: new current, old to history.</text>
+      <text class="boxtext" x="570" y="206" text-anchor="middle" font-size="10" fill="#57534e">No: new file held. Silence waits.</text>
+      <rect x="120" y="222" width="440" height="28" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="340" y="241" text-anchor="middle" font-size="11">Same bytes at intake: DUPLICATE, and the existing id is named.</text>
+    </svg>
+    <figcaption>Figure 1. One row, one current record. A duplicate never becomes a second document.</figcaption>
+  </figure>
+
+  <p>The same bytes are recognised before a model call. The hash is unique in Postgres. If two uploads of those bytes arrive together, one insert wins and the other is told which document it already is. A different file with the same invoice number or contract reference does not overwrite. It waits. Yes replaces the current row and moves the old one to history in one transaction. No holds the new file. If that transaction fails, nothing has moved.</p>
+</section>
+
+<section>
+  <p class="kicker">Where the work sits</p>
+  <h2>The desk, the queue, the book</h2>
+  <p>A person opens a page on this machine. They do not open n8n. The page knows who the link is for, asks what the file is, and shows the book: reading, current, held, history. Four cases sit on that page. Each one runs the real intake.</p>
+
+  <figure>
+    <svg viewBox="0 0 680 318" xmlns="http://www.w3.org/2000/svg">
+      <rect x="150" y="0" width="380" height="32" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="340" y="21" text-anchor="middle" font-size="11">Desk today · Slack, Drive, and mail are the same door later</text>
+      <path d="M340 32 V44" stroke="#1c1917" stroke-width="1.2"/>
+      <polygon points="336,44 344,44 340,52" fill="#1c1917"/>
+      <rect x="220" y="52" width="240" height="36" rx="4" fill="#fafaf9" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="340" y="68" text-anchor="middle" font-size="12" font-weight="600">n8n</text>
+      <text class="boxtext" x="340" y="82" text-anchor="middle" font-size="10" fill="#57534e">orchestration, not the book</text>
+      <path d="M340 88 V100" stroke="#1c1917" stroke-width="1.2"/>
+      <polygon points="336,100 344,100 340,108" fill="#1c1917"/>
+      <rect x="230" y="108" width="220" height="28" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="340" y="127" text-anchor="middle" font-size="12">Queue</text>
+      <path d="M340 136 V148" stroke="#1c1917" stroke-width="1.2"/>
+      <polygon points="336,148 344,148 340,156" fill="#1c1917"/>
+      <rect x="190" y="156" width="300" height="36" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="340" y="172" text-anchor="middle" font-size="12" font-weight="600">Worker</text>
+      <text class="boxtext" x="340" y="186" text-anchor="middle" font-size="10" fill="#57534e">read, model, then the checks</text>
+      <path d="M280 192 V208 H88 V220" stroke="#1c1917" stroke-width="1.1" fill="none"/>
+      <path d="M400 192 V208 H592 V220" stroke="#1c1917" stroke-width="1.1" fill="none"/>
+      <polygon points="84,220 92,220 88,228" fill="#1c1917"/>
+      <polygon points="588,220 596,220 592,228" fill="#1c1917"/>
+      <rect x="8" y="228" width="160" height="40" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="88" y="246" text-anchor="middle" font-size="12" font-weight="600">MinIO</text>
+      <text class="boxtext" x="88" y="260" text-anchor="middle" font-size="10" fill="#57534e">private originals</text>
+      <rect x="500" y="228" width="172" height="40" rx="4" fill="#fff" stroke="#1c1917" stroke-width="1.2"/>
+      <text class="boxtext" x="586" y="246" text-anchor="middle" font-size="12" font-weight="600">Postgres</text>
+      <text class="boxtext" x="586" y="260" text-anchor="middle" font-size="10" fill="#57534e">the ledger</text>
+      <path d="M586 268 V280" stroke="#1c1917" stroke-width="1.2"/>
+      <polygon points="582,280 590,280 586,288" fill="#1c1917"/>
+      <rect x="456" y="288" width="220" height="24" rx="4" fill="#fff7ed" stroke="#9a3412" stroke-width="1.2"/>
+      <text class="boxtext" x="566" y="304" text-anchor="middle" font-size="10">Sheet, Slack, and the desk read the ledger</text>
+    </svg>
+    <figcaption>Figure 2. n8n starts the work. The file lives in the bucket. The row lives in Postgres.</figcaption>
+  </figure>
+
+  <p>On this machine the path is already that shape. Intake hashes the file. The same hash is named and stopped, with no model call. A missing type, a missing department, or a file that is not a PDF, PNG, or JPEG is asked about and stopped. Otherwise the original goes to a private bucket, a received row is inserted, the job is queued, and the person is told the file is not approved yet. The worker then claims the row, reads it, and writes accepted, held, or waiting. The browser is not holding the HTTP call open for the model.</p>
+  <p>The order I want in production, once the scan is in front of the bucket, is: upload, malware scan, durable storage, hash, one database insert, then the queue. The scan is not in this build. ClamAV on the same machine is the first version I would add. A flagged file stays received and is not opened.</p>
+
+  <div class="cols">
+    <div class="panel">
+      <p class="tag run">On this build</p>
+      <h3>You can run it</h3>
+      <ul>
+        <li>Desk, thread, and the four cases</li>
+        <li>Hash, and a unique row in Postgres</li>
+        <li>Private bucket for the original</li>
+        <li>Queue, worker, received then processing</li>
+        <li>Accepted, held, waiting, history</li>
+        <li>Page check on required fields</li>
+        <li>Yes or no on a whole revised row</li>
+        <li>Department filter on the book</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <p class="tag wait">Written, not running</p>
+      <h3>Same rules, more doors</h3>
+      <ul>
+        <li>Google login, instead of the link</li>
+        <li>Slack, Drive, and a known mailbox</li>
+        <li>Malware scan before the file is opened</li>
+        <li>OCR only where the page has no text</li>
+        <li>Chunks, with the page kept on each field</li>
+        <li>A correction of one field, not the whole row</li>
+        <li>A Google Sheet of current rows only</li>
+        <li>Alerts when the queue or the worker stalls</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">Part A</p>
+  <h2>Foundations</h2>
+  <div class="qa">
+    <h3>A1. Webhook, and a manual or form trigger</h3>
+    <p>A webhook is a URL another system calls. The desk, and later Slack or a mailbox, already has the file. The workflow starts because that system posted it, or posted a pointer to it.</p>
+    <p>A manual trigger is the button inside n8n. I use it while I am building. It is not how finance submits a contract. A form trigger is a page n8n hosts. I would use it if I had no other page. I built the desk because the thread, the book, and the yes or no need to live on one screen. I do not want the person on an n8n URL.</p>
+  </div>
+  <div class="qa">
+    <h3>A2. Waiting, and not waiting</h3>
+    <p>Synchronous means the caller sits until the work is finished. Asynchronous means the caller is told the file was taken, and the work happens after that call has ended.</p>
+    <p>Intake on this build is the second kind. It stores the file, inserts received, queues the worker, and replies. The reply is that the file is not approved yet. The case buttons on the desk then watch the book until the row leaves reading. A 100-page file takes the same first reply. It must not hold a browser open. Chunking that file is still to build. The reply is not.</p>
+  </div>
+  <div class="qa">
+    <h3>A3. A 429 from the model</h3>
+    <p>HTTP 429 means the service asked us to slow down. It is not a bad file. A 400 is a bad request. A 401 is a bad key. I do not retry those. Retrying them makes noise and can hide a broken configuration.</p>
+    <p>The model call on this build tries four times, three seconds apart. That is a start. The policy I want is: honour Retry-After when the service sends it, then wait longer each time with a little randomness, and stop at a retry budget. Past that budget the row is held and the thread says the model service asked us to wait. Fields stay blank. An empty total is not zero.</p>
+    <p>A retry is the same document id. It must not insert a second row, and it must not accept a second current record. The id is assigned at intake, before the model is called.</p>
+  </div>
+  <div class="qa">
+    <h3>A4. Self-hosted n8n, against n8n Cloud</h3>
+    <p>The contracts stay on a machine we run. Queue mode, Postgres, and the bucket sit next to n8n. Execution data can contain page text. I do not want that text on someone else’s cloud as the price of not running a box. We are also not billed per execution while a worker reads a long file.</p>
+    <p>The cost of that choice is the box. Upgrades, backups, disk, the encryption key, and a worker that has quietly stopped are ours. Cloud would take that class of failure off the table. For this workload I still self-host, and I treat backups of Postgres and the bucket as part of the system.</p>
+  </div>
+  <div class="qa">
+    <h3>A5. Idempotent</h3>
+    <p>Doing the thing twice leaves the same result as doing it once. A double click, a retry after a timeout, a mailbox and a person both submitting the same PDF: one document, not two.</p>
+    <p>The key is the hash of the bytes. The column is unique. The lookup happens before the model. If two inserts race, one wins and the other receives the existing id. A worker that dies after the row is already accepted does not write it again. The update runs only while the row is received or processing. A second delivery of a finished document is skipped.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">Who may see it</p>
+  <h2>Security and access</h2>
+  <p>Authentication says who the person is. Authorization says which documents and which fields they may see. On this desk, the link <span class="boxtext">?as=andre</span> stands in for the first of those. It is a named seat in a staff map, so the department filter and the thread can be shown. It is not a login. Production removes it. The person authenticates with Google, or with the Slack identity already stored against that person, and the book is checked before the original file or a sensitive field is returned.</p>
+  <p>The header secret on the webhook stops a stranger calling n8n directly. It does not prove who the person is. The browser never receives the database password, the model key, or the storage key. Those sit outside the workflow data and can be rotated on their own.</p>
+  <p>Legal’s query does not return payment amounts. The page does not merely hide a column. A superuser sees the set. Nobody gets a delete. A wrong row is superseded and stays in history. The thread is append-only. Documents and rows are kept for a retention period I would write down with the company before go-live. I have not invented that period here.</p>
+</section>
+
+<section>
+  <p class="kicker">What may become a record</p>
+  <h2>The model proposes. The checks decide.</h2>
+  <p>I do not treat the model’s reply as the record. It returns one JSON object. Temperature is zero. The instruction says to leave a field empty when it is not on the page, and to list a clash instead of picking a winner. Ordinary code then decides whether those values are allowed to become truth.</p>
+  <table class="dense">
+    <thead><tr><th>Task</th><th>Who does it</th></tr></thead>
+    <tbody>
+      <tr><td>File hash</td><td>Code</td></tr>
+      <tr><td>Duplicate detection</td><td>Postgres, unique hash</td></tr>
+      <tr><td>Who the person is</td><td>Identity provider. On this desk, the link is a stand-in.</td></tr>
+      <tr><td>Which rows they may see</td><td>Code and the book</td></tr>
+      <tr><td>OCR</td><td>OCR engine, on pages with no text. Not in this build.</td></tr>
+      <tr><td>Reading the fields</td><td>The model</td></tr>
+      <tr><td>Naming a conflict</td><td>The model lists it. Code refuses to pick.</td></tr>
+      <tr><td>Date, amount, required fields</td><td>Code</td></tr>
+      <tr><td>Replacing the current row</td><td>One Postgres transaction</td></tr>
+      <tr><td>Retry</td><td>The workflow, inside the same document id</td></tr>
+      <tr><td>The queue</td><td>Redis and the worker</td></tr>
+      <tr><td>A yes or a no</td><td>The person</td></tr>
+      <tr><td>The audit line</td><td>Postgres</td></tr>
+    </tbody>
+  </table>
+  <p>Gemini 2.5 Flash, through OpenRouter, is the model this build calls. It takes text and a single image, which is why a photo of an invoice can already be sent. On an invoice the counterparty is the supplier, not the customer. If the person marked the type and the text looks like a different type, I hold the file and I say so. I do not relabel it. The type decides which fields are required.</p>
+  <p>For a text PDF, a required value has to appear on a page. If it does not, the field is blanked and the document is held. The row records the sentence: the total, the reference, the date, the party, and the currency, each with its page. A total with no page is not a total. A picture skips that text check, because there are no page strings to search. That is a gap I would close with OCR, not by trusting the model more.</p>
+  <div class="note">
+    <p>The system does not assume the model output is correct. Unsupported or conflicting values are rejected. The model output is a candidate extraction, not the book.</p>
+  </div>
+</section>
+
+<section>
+  <p class="kicker">The row teams read</p>
+  <h2>One document, one current line</h2>
+  <p>Postgres is the book. A Google Sheet, when I connect it, is a view of rows that are current and accepted. Held rows do not appear on the finance sheet. History is a second tab, so a revised total does not look like two live invoices. If the sheet is down, the book is still the book, and the sync retries. The sheet is not where the workflow writes first. It is not connected on this build.</p>
+  <table class="dense">
+    <thead><tr><th>Column</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td>document_id</td><td>Stable id, from the hash and a time suffix. Assigned at intake.</td></tr>
+      <tr><td>type, department</td><td>The type they stated. The department comes from the staff map.</td></tr>
+      <tr><td>parties, counterparty</td><td>Parties are required on a contract. On an invoice, the counterparty is the supplier.</td></tr>
+      <tr><td>dates</td><td>Document, effective, expiry. A real calendar day, or blank. Effective date is required on a contract.</td></tr>
+      <tr><td>currency, total</td><td>Digits and a decimal. No symbol in the amount. Both required on an invoice.</td></tr>
+      <tr><td>reference</td><td>Invoice number or contract reference. This is how a revision is recognised.</td></tr>
+      <tr><td>why it exists</td><td>Required on a brief.</td></tr>
+      <tr><td>submitted_by, accepted_at</td><td>Who sent it, and when it became current.</td></tr>
+      <tr><td>original</td><td>A storage key. The desk streams it only after the row says this person may see it.</td></tr>
+    </tbody>
+  </table>
+  <p>The ledger also keeps the hash, the storage key, page notes, validation notes, which model ran, who reviewed it, and the id of the row this one replaces. An invoice needs the supplier, the invoice number, the currency, the total, and the invoice date. A contract needs the parties and the effective date. A brief needs the title and why it exists. Anything marked other needs a title.</p>
+</section>
+
+<section>
+  <p class="kicker">When it stops</p>
+  <h2>Every failure has a visible end</h2>
+  <p>I group failures so a reviewer can see there is no silent branch.</p>
+  <table class="dense">
+    <thead><tr><th>Class</th><th>Examples</th><th>Where it ends</th></tr></thead>
+    <tbody>
+      <tr><td>Input</td><td>Unsupported file, corrupt file, malware, missing type or department</td><td>Asked, or refused, before a record is approved. A scan failure stays received and unopened.</td></tr>
+      <tr><td>Extraction</td><td>OCR failure, model timeout, junk JSON, provider down</td><td>Held. Fields blank. The thread says the read did not return a usable result.</td></tr>
+      <tr><td>Validation</td><td>Missing field, bad date, bad amount, two values</td><td>Held. The bad field stays blank. Both conflicting values stay in the note. Nothing is picked.</td></tr>
+      <tr><td>Business rule</td><td>Duplicate, revision, more than one current match</td><td>Duplicate names the old id. A revision waits. An ambiguous match is held and the ids are listed.</td></tr>
+      <tr><td>Infrastructure</td><td>Database down, bucket down, worker down, queue growing</td><td>The job stays queued or fails in the open. It does not become current.</td></tr>
+    </tbody>
+  </table>
+  <p>Every class has a visible terminal state. There is no path where the workflow continues with incomplete data.</p>
+  <table class="dense">
+    <thead><tr><th>Error</th><th>Retry</th><th>Then</th></tr></thead>
+    <tbody>
+      <tr><td>429</td><td>Yes. Retry-After, then a longer wait, inside a budget.</td><td>Hold, and say the service asked us to wait.</td></tr>
+      <tr><td>408, timeout, 5xx</td><td>Yes, limited.</td><td>Hold if the budget is spent.</td></tr>
+      <tr><td>400</td><td>No</td><td>Hold, and inspect the request.</td></tr>
+      <tr><td>401, 403</td><td>No</td><td>Alert. This is a key or a permission, not a bad PDF.</td></tr>
+      <tr><td>Junk JSON</td><td>Once or twice, then stop.</td><td>Hold. Never accept.</td></tr>
+      <tr><td>OCR empty</td><td>Limited, then one picture of that page.</td><td>Hold and name the page if it is still empty.</td></tr>
+      <tr><td>Database unavailable</td><td>Yes</td><td>Leave the job on the queue.</td></tr>
+    </tbody>
+  </table>
+  <p>This build retries the model call four times, three seconds apart. The longer wait, the randomness, and the Retry-After header are the policy above. They are not in the node yet. What is in the node is the rule that a failed call does not become an accepted row.</p>
+  <p>If the worker dies halfway through a document, the row is still processing. The queue’s visibility window expires and the same document id is delivered again. The write runs only while the row is received or processing. A crash cannot create a second current record. A crash after the row is already accepted is a skip, not a second approval.</p>
+</section>
+
+<section>
+  <p class="kicker">Long files, and the bill</p>
+  <h2>A contract is a set of pages</h2>
+  <p>A one-page invoice is one text block, one model call, one decision. A 100-page contract is a pile of pages. Some have text, some are scans, some are blank on purpose. The person already has the reply that the file is received and not approved. The job id is the document id. Sending the file again hits the same hash.</p>
+  <p>The worker I would run walks the pages. Text stays text. A page with no text goes to OCR. If OCR is still empty, one picture of that page, then a hold that names the page. I do not send a hundred-page scan to the vision model page after page. Pages are then grouped, about ten at a time. Each group is its own call, and each candidate keeps its provenance: which chunk, which pages, which field, which value, which source page, and a short excerpt. The merge step does not see “chunk 4 says 18,000”. It sees “chunk 4 says 18,000, from page 37”. If two chunks disagree, both values are kept and the file is held.</p>
+  <p>That chunking is not in this build. The blank-page rule is. A contract whose second page has no text is held, and the note names page 2. I would rather hold a good invoice that sat next to a blank exhibit than accept a total from a file I could not see all of.</p>
+  <p>Cost is kept down by doing the cheap work first. The hash and the duplicate check are code. OCR runs only where the page has no text. The model runs only where a person would otherwise have to interpret the page. The price list is secondary, and it moves. Prices checked on 22 September 2026. Flash is 0.30 US dollars per million input tokens and 2.50 per million output tokens. Thinking tokens are billed as output. Flash-Lite is 0.10 and 0.40.</p>
+  <table class="dense">
+    <thead><tr><th>Job</th><th>Rough size</th><th class="num">Rough cost, thinking off</th></tr></thead>
+    <tbody>
+      <tr><td>One-page invoice</td><td>~600 in, ~400 out</td><td class="num">under 0.2 US cent</td></tr>
+      <tr><td>100-page contract, one call</td><td>~60,000 in, ~800 out</td><td class="num">about 2 US cents</td></tr>
+      <tr><td>Same contract, ten chunks</td><td>ten smaller calls</td><td class="num">still under 10 US cents</td></tr>
+      <tr><td>10,000 text documents, ~8 pages</td><td>~48 million in</td><td class="num">on the order of 30 US dollars</td></tr>
+    </tbody>
+  </table>
+  <p>Those counts are estimates from a typical page, not a measured bill from this project.</p>
+  <p>I split a long contract so the merge can refuse a clash, and so the browser is not the thing waiting. A few cents is not the reason. Thinking left on can also turn a cheap call into a much larger output bill, for a job that is a form. I would turn thinking off for the field pass, and I would measure that against the fixtures before I trusted it. Flash-Lite is the trial model for the cheap questions: is this page empty, does the stated type look wrong. I would not move the money fields to Lite until the same fixtures come back with the same holds and the same totals.</p>
+</section>
+
+<section>
+  <p class="kicker">Part C</p>
+  <h2>A person, a backfill, a quiet morning</h2>
+  <h3>A correction without opening n8n</h3>
+  <p>A waiting row asks yes or no on the desk. That is enough for “does this revised invoice replace the one on file?” It is not enough when one field on page 12 is wrong and the rest of the contract is fine. For that, the held row should open as a short list: the value, the page, the excerpt, and a box. Approve runs the same date and money checks again. It does not call the model again. The row becomes current only when the required fields pass. That field-by-field screen is not on this build. The yes or no on the whole row is.</p>
+  <h3>Ten thousand old files</h3>
+  <p>I would not push an archive through the afternoon webhook. Intake is the same function: store, hash, insert received, or recognise a duplicate. The queue is a second, slower queue. Daily work stays on a fast queue with a small concurrency. The backfill yields when the fast queue has anything waiting. A file that is already current hits the unique hash and is skipped, so the archive can overlap a live day. I would pause the backfill on a run of 429s, or if the oldest daily job grows past a few minutes, and I would release it a few hundred files at a time after looking at the hold rate.</p>
+  <h3>Healthy, without the execution log</h3>
+  <p>The desk already shows whether n8n, the book, Redis, and the bucket answer. That is a port check, not a deep probe. The board I want adds six counts: jobs waiting, the age of the oldest job, holds and how long the oldest hold has sat, failures today, model spend today, and pages OCR could not read. Accepted rows are a count, so you can see that work is finishing. The sheet is where finance looks. The board is where I look to see whether the sheet is being lied to. Those alerts are not posting yet. The status line on the desk is the piece that is.</p>
+</section>
+
+<section>
+  <p class="kicker">Proof</p>
+  <h2>Production acceptance</h2>
+  <p>The primary safety measure is the false acceptance rate. A document counts as a false acceptance if it is marked current and a required value is wrong, or is not supported by the page. A false hold is a good file stopped for a person. A false acceptance is the more serious of the two. The system is biased toward holding an uncertain document.</p>
+  <p>I would not use the model’s own sense of certainty as that proof. Each fixture has an expected value for every required field, including the page. Model output is compared with that expected result before a model, a prompt, or a version is promoted. A change that improves one field and degrades another is not promoted on its own. The measures I would keep are field accuracy, required-field recall, false acceptance rate, false hold rate, OCR failure rate, duplicate rate, processing time, and cost per document. I do not have a scored set large enough to publish a rate from, and I will not invent one.</p>
+  <table class="dense">
+    <thead><tr><th>Test</th><th>Expected result</th><th>This build</th></tr></thead>
+    <tbody>
+      <tr><td>Valid invoice</td><td>Accepted, and current</td><td>Shown. INV-1001, 12500.00 ZAR, page 1.</td></tr>
+      <tr><td>Same file twice</td><td>One document, one model path</td><td>Shown. The existing id is named.</td></tr>
+      <tr><td>Two identical uploads at once</td><td>One insert wins. The other names it.</td><td>The unique hash is in Postgres. Not a button.</td></tr>
+      <tr><td>Revised invoice</td><td>Waiting. The current row is unchanged.</td><td>Shown. 18000.00 waits on 12500.00.</td></tr>
+      <tr><td>Revision approved</td><td>New row current. Old row to history, in one transaction.</td><td>The yes button calls that transaction.</td></tr>
+      <tr><td>Revision rejected</td><td>New file held. Previous row stays current.</td><td>The no button. Silence does neither.</td></tr>
+      <tr><td>Missing required field</td><td>Held. The field stays blank.</td><td>In the checks. No separate fixture button.</td></tr>
+      <tr><td>Conflicting totals or dates</td><td>Held. Both values kept.</td><td>In the checks. Nothing is picked.</td></tr>
+      <tr><td>Invalid date or amount</td><td>Held.</td><td>In the checks.</td></tr>
+      <tr><td>Blank or unreadable page</td><td>Held, and the page is named.</td><td>Shown. Page 2 of the contract fixture.</td></tr>
+      <tr><td>Malformed model JSON</td><td>Held. Never accepted.</td><td>In the checks, when the reply is junk.</td></tr>
+      <tr><td>Model timeout or 429</td><td>Retry inside the policy, then hold.</td><td>Four tries, three seconds apart.</td></tr>
+      <tr><td>Worker unavailable</td><td>The queue grows, and an alert fires.</td><td>The queue is real. The alert is not.</td></tr>
+      <tr><td>100-page document</td><td>Asynchronous. No browser timeout.</td><td>The reply is already asynchronous. Chunks are not.</td></tr>
+      <tr><td>Unauthorized person</td><td>No document, and no restricted field.</td><td>Department filter. The link is not a login.</td></tr>
+      <tr><td>Sheet unavailable</td><td>The book remains Postgres. Sync retries.</td><td>The sheet is not connected.</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <p>The system is not production-ready until these cases pass against the same build that is demonstrated.</p>
+  </div>
+  <h3>The regression set</h3>
+  <p>Functional: a clean invoice, a contract, a brief. Adversarial: a blank page, a corrupt PDF, conflicting totals, an impossible date, junk JSON. Concurrency: two identical uploads at once, two revisions at once, a worker restart during processing. Dependencies: a 429, a timeout, a dead model, a dead database, a dead bucket. Scale: one 100-page document, a 10,000-file backfill, and live documents at the same time. Security: a person outside the department, a session that has expired. The four buttons cover the first slice of that list. They are the cases I will not weaken to make a demo look finished.</p>
+</section>
+
+<section>
+  <p class="kicker">What you can press</p>
+  <h2>The desk, and what it is not</h2>
+  <p>The page is on this machine, at 127.0.0.1:8787. It is a test desk, not a public site. The status line shows whether n8n, the book, Redis, and the bucket answer. The buttons are Clean invoice, Same file again, Revised invoice, and Blank page. After a run the thread says whether the row matched the fixture.</p>
+  <p>A clean invoice comes back accepted, with the supplier, the invoice number, the total, and the page each value was found on. The same file comes back as the same document. A revised total comes back waiting, with the old total and the new one both named, and the current row left alone until a person answers. A contract with an empty second page comes back held, and the note names page 2. The parties and the effective date can still be cited. The file is not accepted.</p>
+  <p>The brief’s file formats are a native-text PDF, a scanned image, and a Word document. A Word file is read as a Word file. The words come out of the document. A picture embedded in it is read with the same OCR as a scanned page. It is not converted into a PDF first, and it is not refused. A value is cited from the section it was found in.</p>
+  <p>The demo mailbox is team5pmdocintel@gmail.com. For the demo it accepts a file from any sender, so the path can be tested. That is not the live rule. Once this is in production, the inbox accepts a file only when the From address is a company email address. Mail from any other domain is refused. It is not stored, and it is not sent to the model.</p>
+  <p>The demo is smaller on purpose. It proves the state changes that decide whether a number becomes truth. Production extends that same machine with durable doors, a real login, a scan, OCR, and chunks that keep the page on every field. I would rather show a hold I can explain than a pile of integrations I cannot defend.</p>
+</section>
+
+<section class="endnote">
+  <p class="kicker">References</p>
+  <p>n8n, Webhook node. <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/">docs.n8n.io</a>. The intake, confirm, book, and thread triggers.</p>
+  <p>n8n, Form trigger and Manual trigger. <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.formtrigger/">Form</a>, <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.manualworkflowtrigger/">Manual</a>. The distinction in A1.</p>
+  <p>n8n, Queue mode. <a href="https://docs.n8n.io/hosting/scaling/queue-mode/">docs.n8n.io/hosting/scaling/queue-mode</a>. Redis and a worker. This build runs that way, on port 5680, separate from any other n8n on the machine.</p>
+  <p>n8n, HTTP Request node, retry on fail. <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/">docs.n8n.io</a>. Four tries, three seconds apart, on the model call.</p>
+  <p>Google, Gemini API pricing, checked 22 September 2026. <a href="https://ai.google.dev/gemini-api/docs/pricing">ai.google.dev/gemini-api/docs/pricing</a>. Flash 0.30 / 2.50 per million tokens. Flash-Lite 0.10 / 0.40. Output price includes thinking tokens.</p>
+  <p>OpenRouter, Gemini 2.5 Flash, same rates on that date. <a href="https://openrouter.ai/google/gemini-2.5-flash">openrouter.ai/google/gemini-2.5-flash</a>. The route the workflow calls.</p>
+  <p>Token counts in the cost table are estimates, not a measured bill from this project.</p>
+</section>
+
+</body>
+</html>

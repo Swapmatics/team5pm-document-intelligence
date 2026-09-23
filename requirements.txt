@@ -1,0 +1,6 @@
+pypdf==6.19.0
+boto3==1.35.76
+pymupdf==1.26.4
+slack-bolt==1.23.0
+google-api-python-client==2.149.0
+google-auth==2.36.0

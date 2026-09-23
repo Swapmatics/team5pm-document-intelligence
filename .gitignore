@@ -1,0 +1,16 @@
+.env
+deploy/.env
+deploy/google-service-account.json
+deploy/logs/
+deploy/drive-seen.json
+deploy/file-links.json
+deploy/n8n-runtime/
+deploy/ocr-vision
+deploy/n8n-data/
+node_modules/
+storage/
+.DS_Store
+*.pdf
+!fixtures/*.pdf
+!fixtures/try-today/*.pdf
+!docs/*.pdf
