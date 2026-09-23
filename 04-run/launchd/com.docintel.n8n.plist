@@ -3,14 +3,19 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.docintel.mail</string>
+  <string>com.docintel.n8n</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/sh</string>
-    <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/mail.sh</string>
+    <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/n8n.sh</string>
   </array>
   <key>WorkingDirectory</key>
   <string>/Users/dreserver/Projects/team5pm-document-intelligence</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+  </dict>
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
@@ -18,8 +23,8 @@
   <key>ThrottleInterval</key>
   <integer>10</integer>
   <key>StandardOutPath</key>
-  <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/logs/mail.log</string>
+  <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/logs/n8n.log</string>
   <key>StandardErrorPath</key>
-  <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/logs/mail.log</string>
+  <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/logs/n8n.log</string>
 </dict>
 </plist>

@@ -4,7 +4,9 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SUBMIT = (ROOT / "workflows" / "submit.js").read_text()
+PROOF = ROOT / "02-src" / "workflows" / "proof"
+CURRENT = ROOT / "02-src" / "workflows" / "current"
+SUBMIT = (PROOF / "1-submit.js").read_text()
 
 start = SUBMIT.index("const prepareCode = `")
 end = SUBMIT.index("const decideCode = `")
@@ -197,7 +199,7 @@ export default workflow('docintel-process', 'DocIntel — Process')
 if old_export not in process:
     raise SystemExit("missing export")
 process = process.replace(old_export, new_export, 1)
-(ROOT / "workflows" / "process.js").write_text(process)
+(CURRENT / "2-process.js").write_text(process)
 print("wrote process", len(process))
 raise SystemExit(0)
 
@@ -515,6 +517,6 @@ export default workflow('docintel-intake', 'DocIntel — Intake')
 # An f-string will try to interpret them. I must NOT use an f-string with prepare_code.
 # I'll concatenate instead.
 
-(ROOT / "workflows" / "intake.js").write_text("SKIP")
+(CURRENT / "1-intake.js").write_text("SKIP")
 print("process bytes", len(process))
 print("prepare starts", prepare_code[:40])

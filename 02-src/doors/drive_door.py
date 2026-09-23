@@ -8,8 +8,8 @@ from pathlib import Path
 
 from slack_door import desk_json, encode_form, load_env, parse_instruction
 
-ROOT = Path(__file__).resolve().parent.parent
-SEEN = ROOT / "deploy" / "drive-seen.json"
+ROOT = Path(__file__).resolve().parents[2]
+SEEN = ROOT / "04-run" / "drive-seen.json"
 
 
 def seen_ids():
@@ -33,7 +33,7 @@ def person():
 
 def poll():
     folder = os.environ.get("DOCINTEL_DRIVE_FOLDER", "")
-    key_path = os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE") or str(ROOT / "deploy" / "google-service-account.json")
+    key_path = os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE") or str(ROOT / "04-run" / "google-service-account.json")
     who = person()
     if not folder or not who or not Path(key_path).is_file():
         return
@@ -80,7 +80,7 @@ def poll():
 
 
 def main():
-    load_env(ROOT / "deploy" / ".env")
+    load_env(ROOT / "04-run" / ".env")
     load_env(ROOT / ".env")
     while True:
         try:

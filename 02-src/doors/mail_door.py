@@ -13,7 +13,7 @@ from email.utils import parseaddr
 
 from slack_door import desk_json, encode_form, load_env, parse_instruction
 
-ROOT = __import__("pathlib").Path(__file__).resolve().parent.parent
+ROOT = __import__("pathlib").Path(__file__).resolve().parents[2]
 
 
 def header_text(value):
@@ -205,7 +205,7 @@ def poll():
 
 
 def main():
-    load_env(ROOT / "deploy" / ".env")
+    load_env(ROOT / "04-run" / ".env")
     load_env(ROOT / ".env")
     while True:
         try:

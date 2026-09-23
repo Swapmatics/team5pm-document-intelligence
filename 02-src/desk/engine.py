@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-ROOT = Path(__file__).resolve().parent.parent
-OCR_BIN = ROOT / "deploy" / "ocr-vision"
+ROOT = Path(__file__).resolve().parents[2]
+OCR_BIN = ROOT / "04-run" / "ocr-vision"
 PAGE_MARK = re.compile(r"^---\s*PAGE\s+\d+\s*---\s*$", re.I)
 MODEL = "google/gemini-2.5-flash"
 INPUT_USD_PER_MILLION = 0.30
@@ -53,7 +53,7 @@ def env_file(path):
 
 
 def openrouter_key():
-    return env_file(ROOT / "deploy" / ".env").get("OPENROUTER_API_KEY", "")
+    return env_file(ROOT / "04-run" / ".env").get("OPENROUTER_API_KEY", "")
 
 
 def usable(text):

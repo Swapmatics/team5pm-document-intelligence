@@ -12,7 +12,7 @@ The durable core is running on this Mac. Postgres is the ledger, MinIO holds the
 - Two uploads of the same bytes take a lock on that hash inside `intake_document`. The second waits until the first commits, then is told the existing document id. It does not insert a second row and it does not start a second read.
 - An archive is a separate queue (`backfill_items`). It is admitted in small batches only while no live file is `received` or `processing`. A hash already on the book is skipped. A run of failed reads, or a held majority in the last archive batch, pauses it. The door stays idle until `DOCINTEL_BACKFILL_DIR` is set. It does not run 10,000 model calls on its own.
 
-The n8n main process and the worker are host processes started with `deploy/n8n.sh`. They are not a second container. The Docker VM is small and already runs another n8n, so a second n8n container is killed for memory. That other instance is left alone.
+The n8n main process and the worker are host processes started with `04-run/n8n.sh`. They are not a second container. The Docker VM is small and already runs another n8n, so a second n8n container is killed for memory. That other instance is left alone.
 
 `?as=andre` is still the staff-map door on the desk. It is not SSO. Google SSO is specified below and is not running.
 

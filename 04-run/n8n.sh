@@ -9,7 +9,7 @@ set +a
 runtime="$(pwd)/n8n-runtime"
 node_bin="${NODE_BIN:-/opt/homebrew/opt/node@22/bin/node}"
 if [ ! -x "$runtime/bin/n8n" ]; then
-  echo "n8n runtime is missing. Run the copy from the n8n image into deploy/n8n-runtime." >&2
+  echo "n8n runtime is missing. Run the copy from the n8n image into 04-run/n8n-runtime." >&2
   exit 1
 fi
 mkdir -p n8n-data

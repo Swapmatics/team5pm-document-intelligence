@@ -20,7 +20,8 @@ from engine import alert_lines, extract_pdf, extract_word, is_word, marked, read
 from scan import scan_bytes
 
 ROOT = Path(__file__).resolve().parent
-STORE = ROOT.parent / "storage"
+REPO = ROOT.parents[1]
+STORE = REPO / "storage"
 PORT = 8787
 MAX_BYTES = 25 * 1024 * 1024
 
@@ -40,7 +41,7 @@ STAFF = {
 
 def load_env():
     values = {}
-    path = ROOT.parent / ".env"
+    path = REPO / ".env"
     if not path.exists():
         return values
     for line in path.read_text().splitlines():
@@ -207,8 +208,9 @@ class Desk(BaseHTTPRequestHandler):
         if not case:
             self._send(400, '{"message":"That case is not on this desk."}', "application/json")
             return
-        file_path = (ROOT.parent / "fixtures" / case["file"]).resolve()
-        if not str(file_path).startswith(str((ROOT.parent / "fixtures").resolve()) + "/") or not file_path.is_file():
+        samples = REPO / "03-samples"
+        file_path = (samples / case["file"]).resolve()
+        if not str(file_path).startswith(str(samples.resolve()) + "/") or not file_path.is_file():
             self._send(404, '{"message":"That fixture file is not on disk."}', "application/json")
             return
         raw = file_path.read_bytes()

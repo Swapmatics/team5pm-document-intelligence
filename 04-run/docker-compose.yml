@@ -1,7 +1,7 @@
 name: docintel
 
 # Postgres, Redis, and MinIO stay in this VM. The queue-mode n8n main and worker
-# run on the host (deploy/n8n.sh). A second n8n container is killed for memory
+# run on the host (04-run/n8n.sh). A second n8n container is killed for memory
 # on this small VM, which already runs another n8n.
 
 services:

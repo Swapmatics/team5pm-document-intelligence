@@ -3,19 +3,18 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.docintel.n8n-worker</string>
+  <string>com.docintel.slack</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/sh</string>
-    <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/n8n.sh</string>
-    <string>worker</string>
+    <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/slack.sh</string>
   </array>
   <key>WorkingDirectory</key>
-  <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy</string>
+  <string>/Users/dreserver/Projects/team5pm-document-intelligence</string>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
-    <string>/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+    <string>/opt/homebrew/bin:/usr/bin:/bin</string>
   </dict>
   <key>RunAtLoad</key>
   <true/>
@@ -24,8 +23,8 @@
   <key>ThrottleInterval</key>
   <integer>10</integer>
   <key>StandardOutPath</key>
-  <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/logs/n8n-worker.log</string>
+  <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/logs/slack.log</string>
   <key>StandardErrorPath</key>
-  <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/logs/n8n-worker.log</string>
+  <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/logs/slack.log</string>
 </dict>
 </plist>

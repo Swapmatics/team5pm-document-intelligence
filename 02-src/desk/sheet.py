@@ -6,7 +6,7 @@ import os
 import subprocess
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 COLUMNS = (
     "document_id",
     "content_sha256",
@@ -82,7 +82,7 @@ def column_letter(index):
 
 
 def load_link_cache():
-    path = ROOT / "deploy" / "file-links.json"
+    path = ROOT / "04-run" / "file-links.json"
     if not path.is_file():
         return {}
     try:
@@ -92,7 +92,7 @@ def load_link_cache():
 
 
 def save_link_cache(cache):
-    path = ROOT / "deploy" / "file-links.json"
+    path = ROOT / "04-run" / "file-links.json"
     path.write_text(json.dumps(cache))
 
 
@@ -202,7 +202,7 @@ def credential_path():
     configured = os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE", "")
     if configured:
         return Path(configured)
-    return ROOT / "deploy" / "google-service-account.json"
+    return ROOT / "04-run" / "google-service-account.json"
 
 
 def sheet_url(sheet_id):
@@ -211,8 +211,8 @@ def sheet_url(sheet_id):
     return "https://docs.google.com/spreadsheets/d/%s" % sheet_id
 
 
-def load_deploy_env():
-    path = ROOT / "deploy" / ".env"
+def load_run_env():
+    path = ROOT / "04-run" / ".env"
     if not path.is_file():
         return
     for line in path.read_text().splitlines():
@@ -223,7 +223,7 @@ def load_deploy_env():
 
 
 def push_sheet(rows):
-    load_deploy_env()
+    load_run_env()
     path = credential_path()
     sheet_id = os.environ.get("DOCINTEL_SHEET_ID", "")
     if not path.is_file():
@@ -274,7 +274,7 @@ def push_sheet(rows):
 
 
 def remember_sheet_id(sheet_id):
-    path = ROOT / "deploy" / ".env"
+    path = ROOT / "04-run" / ".env"
     if not path.exists():
         return
     lines = path.read_text().splitlines()

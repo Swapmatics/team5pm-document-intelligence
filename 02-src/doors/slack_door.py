@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 DESK = os.environ.get("DOCINTEL_DESK") or "http://127.0.0.1:8787"
 TYPES = ("invoice", "contract", "brief", "other")
 MAX_BYTES = 25 * 1024 * 1024
@@ -284,12 +284,12 @@ def watch_alerts(client):
 
 
 def main():
-    load_env(ROOT / "deploy" / ".env")
+    load_env(ROOT / "04-run" / ".env")
     load_env(ROOT / ".env")
     bot = os.environ.get("SLACK_BOT_TOKEN", "")
     app_token = os.environ.get("SLACK_APP_TOKEN", "")
     if not bot or not app_token:
-        raise SystemExit("SLACK_BOT_TOKEN and SLACK_APP_TOKEN are missing from deploy/.env. The Slack door will not start.")
+        raise SystemExit("SLACK_BOT_TOKEN and SLACK_APP_TOKEN are missing from 04-run/.env. The Slack door will not start.")
     from slack_bolt import App
     from slack_bolt.adapter.socket_mode import SocketModeHandler
 

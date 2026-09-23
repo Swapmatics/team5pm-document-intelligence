@@ -9,7 +9,7 @@ from pathlib import Path
 
 from slack_door import desk_json, encode_form, load_env, parse_instruction
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 READABLE = {".pdf", ".png", ".jpg", ".jpeg", ".doc", ".docx"}
 MIME = {
     ".pdf": "application/pdf",
@@ -119,7 +119,7 @@ def admit_once(batch):
 
 
 def main():
-    load_env(ROOT / "deploy" / ".env")
+    load_env(ROOT / "04-run" / ".env")
     load_env(ROOT / ".env")
     folder = os.environ.get("DOCINTEL_BACKFILL_DIR", "")
     batch = int(os.environ.get("DOCINTEL_BACKFILL_BATCH") or "25")

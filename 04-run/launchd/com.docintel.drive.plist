@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.docintel.desk</string>
+  <string>com.docintel.drive</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/sh</string>
-    <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/desk.sh</string>
+    <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/drive.sh</string>
   </array>
   <key>WorkingDirectory</key>
   <string>/Users/dreserver/Projects/team5pm-document-intelligence</string>
@@ -18,8 +18,8 @@
   <key>ThrottleInterval</key>
   <integer>10</integer>
   <key>StandardOutPath</key>
-  <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/logs/desk.log</string>
+  <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/logs/drive.log</string>
   <key>StandardErrorPath</key>
-  <string>/Users/dreserver/Projects/team5pm-document-intelligence/deploy/logs/desk.log</string>
+  <string>/Users/dreserver/Projects/team5pm-document-intelligence/04-run/logs/drive.log</string>
 </dict>
 </plist>

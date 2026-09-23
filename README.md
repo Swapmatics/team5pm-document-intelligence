@@ -4,18 +4,43 @@ This prototype validates the interaction and safety policy; production moves per
 
 A file comes in, is scanned, and is stored. The person is told it was received before a model runs. The ledger then accepts it, holds it, or waits for a yes. An identical file is named and not written again. A blank page is held and named. Nothing is deleted.
 
-## Where to look
+The folders are numbered in the order to read them.
+
+## 01 — Read this
+
+| File | What it is |
+|---|---|
+| [01-docs/assessment.pdf](01-docs/assessment.pdf) | The written submission |
+| [01-docs/design.md](01-docs/design.md) | What is running, and what production still changes |
+
+## 02 — The program
 
 | Path | What it is |
 |---|---|
-| [docs/assessment.pdf](docs/assessment.pdf) | The written submission |
-| [docs/design.md](docs/design.md) | What is running, and what production still changes |
-| [web/](web/) | The desk, the doors, and the checks |
-| [workflows/](workflows/) | The n8n workflow source |
-| [deploy/ledger.sql](deploy/ledger.sql) | The book: one row per document, and the functions that write it |
-| [fixtures/](fixtures/) | The invoice, the revision, and the contract with a blank page |
+| [02-src/desk](02-src/desk) | The page, the checks, and the sheet copy |
+| [02-src/doors](02-src/doors) | Slack, Drive, the mailbox, and the archive queue |
+| [02-src/workflows/current](02-src/workflows/current) | The running n8n book, numbered in run order: intake, process, confirm, records, thread |
+| [02-src/workflows/proof](02-src/workflows/proof) | The earlier safety proof. It is not this deploy |
 
-`workflows/intake.js`, `process.js`, and the `ledger-*.js` files are the running book. `workflows/submit.js`, `confirm.js`, `records.js`, and `thread.js` are the earlier safety proof. They are not the deploy.
+## 03 — Files you can drop
+
+[03-samples](03-samples) holds a clean invoice, the same invoice revised, and a contract whose second page is blank.
+
+## 04 — How it runs
+
+[04-run/ledger.sql](04-run/ledger.sql) is the book: one row per document, and the functions that write it. Compose, the LaunchAgents, and the start scripts sit in the same folder.
+
+```bash
+docker compose -f 04-run/docker-compose.yml --env-file 04-run/.env up -d
+```
+
+The desk, n8n, the worker, Slack, Drive, and the mailbox start again after a reboot. Postgres, Redis, and MinIO come back when Docker does.
+
+Open http://127.0.0.1:8787/?as=andre
+
+That link is a staff-map seat, not a login. Andre is the superuser. A person outside finance does not receive currency or totals from the desk.
+
+Copy `.env.example` to `.env` and `04-run/.env.example` to `04-run/.env`. The webhook header is `X-Docintel-Key`. Its value is `DOCINTEL_WEBHOOK_SECRET`. Keys, tokens, and the service-account file stay in those env files. They are not in this repository.
 
 ## What a file goes through
 
@@ -27,21 +52,3 @@ A file comes in, is scanned, and is stored. The person is told it was received b
 6. A held row can be corrected on the desk. A changed invoice or contract waits for yes or no. Yes supersedes the old row and accepts the new one in one transaction.
 
 The Google Sheet is a copy of those columns, split into Current, Held, Reading, and History. It is not the book. Each row links to a viewable copy of the file.
-
-An archive folder, set with `DOCINTEL_BACKFILL_DIR`, is a separate queue. It is admitted in small batches only while no live file is still being read.
-
-## Run it
-
-Postgres, Redis, and MinIO:
-
-```bash
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d
-```
-
-The desk, n8n, the worker, Slack, Drive, and the mailbox are LaunchAgents under `deploy/launchd/`. They start again after a reboot. The three data services come back when Docker does.
-
-Open http://127.0.0.1:8787/?as=andre
-
-That link is a staff-map seat, not a login. Andre is the superuser. A person outside finance does not receive currency or totals from the desk.
-
-Copy `.env.example` to `.env` and `deploy/.env.example` to `deploy/.env`. The webhook header is `X-Docintel-Key`. Its value is `DOCINTEL_WEBHOOK_SECRET`. Keys, tokens, and the service-account file stay in those env files. They are not in this repository.
