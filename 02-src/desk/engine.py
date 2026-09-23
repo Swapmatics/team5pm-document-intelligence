@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -38,6 +39,10 @@ REQUIRED = {
 QUEUE_AGE_SECONDS = 120
 HELD_AGE_SECONDS = 3600
 MODEL_FAILURE = "The extraction did not return a usable result"
+CHUNK_SIZE = 10
+CHUNK_GAP_SECONDS = 1.5
+CHUNK_TRIES = 4
+CHUNK_RETRY_SECONDS = 3
 
 
 def env_file(path):
@@ -292,17 +297,14 @@ def usage_cost(usage):
     return round(cost, 6)
 
 
-def model_page(page_number, text, stated_type, place="page"):
+def post_model(prompt_text):
     key = openrouter_key()
     if not key:
         raise RuntimeError("The model key is missing, so this page was not read.")
     body = {
         "model": MODEL,
         "temperature": 0,
-        "messages": [{
-            "role": "user",
-            "content": PROMPT + "\nThis is %s %d only.\nStated type: %s\n\n%s" % (place, page_number, stated_type, text),
-        }],
+        "messages": [{"role": "user", "content": prompt_text}],
     }
     request = Request(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -319,6 +321,75 @@ def model_page(page_number, text, stated_type, place="page"):
         "completion_tokens": int(usage.get("completion_tokens") or 0),
         "cost_usd": usage.get("cost"),
     }
+
+
+def model_page(page_number, text, stated_type, place="page"):
+    return post_model(
+        PROMPT + "\nThis is %s %d only.\nStated type: %s\n\n%s" % (place, page_number, stated_type, text)
+    )
+
+
+CHUNK_PROMPT = (
+    "You extract fields from one range of a longer document. Return one JSON object and nothing else. "
+    "Do not invent a value. If a field is not supported inside this range, use an empty string. "
+    "Do not choose between two different totals, dates, or party names. Put each conflict in conflicts. "
+    "type_guess must be invoice, contract, brief, or other. "
+    "JSON keys: title, parties, counterparty, document_date, effective_date, expiry_date, currency, "
+    "total_amount, reference_number, why_it_exists, type_guess, conflicts, continuation, field_pages. "
+    "conflicts items look like {\"field\":\"total_amount\",\"values\":[\"100.00\",\"180.00\"]}. "
+    "continuation is true when this range reads as a continuation rather than a new section, otherwise false. "
+    "field_pages maps each filled field to the page number inside this range that supports it. "
+    "Dates as YYYY-MM-DD when the pages state one. Amounts as digits and a decimal point, no currency symbol. "
+    "On an invoice, counterparty is the supplier, not the customer. "
+    "You are seeing pages %d–%d of a %d-page document. Extract only fields that are supported within this range. "
+    "Leave a field blank rather than guess."
+)
+
+
+def model_chunk(group, stated_type, total_pages):
+    prompt = CHUNK_PROMPT % (group["start"], group["end"], total_pages)
+    prompt += "\nStated type: %s\n\n%s" % (stated_type, marked(group["pages"]))
+    return post_model(prompt)
+
+
+def group_pages(pages, size=CHUNK_SIZE):
+    groups = []
+    for start in range(0, len(pages), size):
+        chunk_pages = pages[start:start + size]
+        groups.append({
+            "chunk": len(groups) + 1,
+            "start": chunk_pages[0]["page"],
+            "end": chunk_pages[-1]["page"],
+            "pages": chunk_pages,
+        })
+    return groups
+
+
+def page_supports(group, key, value, parsed):
+    raw = str(value or "").strip()
+    if not raw:
+        return 0
+    forms = [raw.lower(), re.sub(r"\s+", "", raw).lower()]
+    if forms[-1].endswith(".00"):
+        forms.append(forms[-1][:-3])
+
+    def hit(text):
+        hay = (text or "").lower()
+        compact = re.sub(r"\s+", "", hay)
+        return any(form and (form in hay or form in compact) for form in forms)
+
+    stated = (parsed.get("field_pages") or {}).get(key) if isinstance(parsed.get("field_pages"), dict) else None
+    try:
+        stated = int(stated)
+    except (TypeError, ValueError):
+        stated = 0
+    named = [page for page in group["pages"] if page["page"] == stated]
+    if named and hit(named[0].get("text")):
+        return stated
+    for page in group["pages"]:
+        if hit(page.get("text")):
+            return page["page"]
+    return 0
 
 
 def parse_model(raw):
@@ -414,9 +485,149 @@ def merge_pages(pages, stated_type):
     return result, reports, model_error, spent
 
 
+def call_chunk(call, group, stated_type, total_pages, retry_gap=CHUNK_RETRY_SECONDS):
+    last = None
+    for attempt in range(CHUNK_TRIES):
+        try:
+            return call(group, stated_type, total_pages)
+        except Exception as exc:
+            last = exc
+            if attempt + 1 < CHUNK_TRIES and retry_gap:
+                time.sleep(retry_gap)
+    raise last
+
+
+def merge_chunks(pages, stated_type, call=None, gap=None, retry_gap=None):
+    call = call or model_chunk
+    if gap is None:
+        gap = CHUNK_GAP_SECONDS
+    if retry_gap is None:
+        retry_gap = CHUNK_RETRY_SECONDS
+    reports = []
+    evidence = []
+    found = {key: {} for key in FIELDS}
+    unreadable = []
+    model_error = ""
+    spent = []
+    called = False
+    page_text = {page["page"]: page["text"] for page in pages}
+    for group in group_pages(pages):
+        for page in group["pages"]:
+            reports.append({"page": page["page"], "source": page["source"], "chars": len(usable(page["text"])), "chunk": group["chunk"]})
+            if page["source"] == "empty":
+                unreadable.append(page["page"])
+        if not any(page["source"] != "empty" for page in group["pages"]):
+            continue
+        if called and gap:
+            time.sleep(gap)
+        called = True
+        try:
+            parsed, usage = call_chunk(call, group, stated_type, len(pages), retry_gap)
+            parsed = parsed or {}
+            spent.append(usage)
+        except Exception as exc:
+            model_error = str(exc)
+            parsed = {}
+        if not parsed and not model_error:
+            model_error = "The extraction did not return a usable result, so nothing was filled in."
+        if parsed.get("continuation") is True:
+            evidence.append({
+                "field": "continuation",
+                "value": "pages %d-%d" % (group["start"], group["end"]),
+                "page": group["start"],
+                "chunk": group["chunk"],
+                "pages": "%d-%d" % (group["start"], group["end"]),
+                "source": "read",
+                "excerpt": "",
+            })
+        proposals = {key: [] for key in FIELDS}
+        for key in FIELDS:
+            value = normalize(key, parsed.get(key))
+            if value:
+                proposals[key].append(value)
+        for item in parsed.get("conflicts") or []:
+            key = clean(item.get("field") or "")
+            if key not in FIELDS:
+                continue
+            for bit in item.get("values") or []:
+                value = normalize(key, bit)
+                if value and value not in proposals[key]:
+                    proposals[key].append(value)
+        for key, values in proposals.items():
+            for value in values:
+                page_number = page_supports(group, key, value, parsed)
+                if not page_number:
+                    continue
+                found[key].setdefault(value, []).append({
+                    "chunk": group["chunk"],
+                    "page": page_number,
+                    "pages": "%d-%d" % (group["start"], group["end"]),
+                    "excerpt": excerpt_for(page_text.get(page_number) or "", value),
+                })
+    merged = {}
+    conflicts = []
+    for key, values in found.items():
+        if not values:
+            merged[key] = ""
+            continue
+        if len(values) == 1:
+            value, cites = next(iter(values.items()))
+            merged[key] = value
+            if key != "type_guess":
+                cite = cites[0]
+                evidence.append({
+                    "field": key,
+                    "value": value,
+                    "page": cite["page"],
+                    "chunk": cite["chunk"],
+                    "pages": cite["pages"],
+                    "source": "read",
+                    "excerpt": cite["excerpt"],
+                })
+            continue
+        merged[key] = ""
+        conflicts.append({"field": key, "values": list(values)})
+        if key == "type_guess":
+            continue
+        for value, cites in values.items():
+            cite = cites[0]
+            evidence.append({
+                "field": key,
+                "value": value,
+                "page": cite["page"],
+                "chunk": cite["chunk"],
+                "pages": cite["pages"],
+                "source": "conflict",
+                "excerpt": cite["excerpt"],
+            })
+    result = {
+        "title": merged["title"],
+        "parties": merged["parties"],
+        "counterparty": merged["counterparty"],
+        "document_date": merged["document_date"],
+        "effective_date": merged["effective_date"],
+        "expiry_date": merged["expiry_date"],
+        "currency": merged["currency"],
+        "total_amount": merged["total_amount"],
+        "reference_number": merged["reference_number"],
+        "why_it_exists": merged["why_it_exists"],
+        "type_guess": merged["type_guess"],
+        "unreadable_pages": unreadable,
+        "conflicts": conflicts,
+        "field_evidence": evidence,
+    }
+    return result, reports, model_error, spent
+
+
+def read_fields(pages, stated_type):
+    if len(pages) > CHUNK_SIZE:
+        return merge_chunks(pages, stated_type)
+    return merge_pages(pages, stated_type)
+
+
 def extract_word(data, stated_type):
     pages = read_word(data)
-    merged, reports, model_error, spent = merge_pages(pages, stated_type)
+    merged, reports, model_error, spent = read_fields(pages, stated_type)
     text = marked(pages)
     prompt = sum(int(item.get("prompt_tokens") or 0) for item in spent)
     completion = sum(int(item.get("completion_tokens") or 0) for item in spent)
@@ -439,7 +650,7 @@ def extract_word(data, stated_type):
 
 def extract_pdf(data, stated_type):
     pages = read_pages(data)
-    merged, reports, model_error, spent = merge_pages(pages, stated_type)
+    merged, reports, model_error, spent = read_fields(pages, stated_type)
     text = marked(pages)
     content = json.dumps(merged)
     prompt = sum(int(item.get("prompt_tokens") or 0) for item in spent)

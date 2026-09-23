@@ -20,7 +20,7 @@ The desk shows the ledger columns on every row. One document is one row. A super
 
 A file is scanned with ClamAV before the desk opens it, before it is stored, and again before a worker reads the pages. A flagged file is refused. If the scanner is missing or does not finish, the file is not opened.
 
-The worker reads a PDF after intake has already replied. It calls the desk at `/extract`. Each page with text is one model call. A page with no native text is rendered and read with Apple Vision on this Mac. If that page is still empty, the document is held and the page is named. That page is not sent to the vision model. Agreeing values are kept with the page they came from and a short excerpt of that page. Two different values for the same field are left blank.
+The worker reads a PDF after intake has already replied. It calls the desk at `/extract`. A file of ten pages or fewer is one model call per page that has text. A longer file is grouped about ten pages at a time. Each group is one call, one at a time, with a second and a half between calls. A value is kept only when a page in that group supports it. Two groups that disagree leave the field blank. A page with no native text is rendered and read with Apple Vision on this Mac. If that page is still empty, the document is held and the page is named. That page is not sent to the vision model. Agreeing values are kept with the page they came from and a short excerpt of that page. Two different values for the same field are left blank.
 
 Each model call is written to `model_usage`. The desk status line shows today's spend in Johannesburg time and how many pages in the ledger could not be read.
 
@@ -97,7 +97,7 @@ n8n decides the next step and calls the workers. It does not own the rows, the f
 
 4. **Google Workspace SSO is the identity provider.** Users, teams, and roles are rows in Postgres, maintained by a superuser. Department comes from that map. Legal does not receive payment amounts because the query does not return them, not because the page hides a column. One or two superusers see the whole set. Nobody gets a delete.
 
-5. **Native text first, OCR only for the pages that have none.** A page that already has a text layer is not sent through OCR. A scanned page is. Empty OCR is a held page, named in plain language, not a blank field treated as zero. That page is not sent to the vision model. The model sees page chunks, not the whole file in one request.
+5. **Native text first, OCR only for the pages that have none.** A page that already has a text layer is not sent through OCR. A scanned page is. Empty OCR is a held page, named in plain language, not a blank field treated as zero. That page is not sent to the vision model. A file longer than ten pages is sent as groups of about ten, one group at a time.
 
 6. **Every material field carries its evidence.** Extracted value, source page, source excerpt, validation state, and the history of any reviewer override. A total without a page is not a total. Conflicting totals are both kept. The code does not pick one.
 

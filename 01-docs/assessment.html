@@ -416,6 +416,7 @@
         <li>Private bucket, and ClamAV before open</li>
         <li>Queue, worker, received then processing</li>
         <li>OCR, including a scan whose words are not a total</li>
+        <li>A file longer than ten pages, in groups of about ten, one call at a time</li>
         <li>Sheet copy, with a link to the file. Amounts stay on the sheet.</li>
         <li>Yes or no, and a correction on the desk</li>
         <li>Department views on the desk. Projects and accounts see no finance rows.</li>
@@ -427,7 +428,6 @@
       <ul>
         <li>Google login, instead of the link</li>
         <li>A company-email rule on the live inbox</li>
-        <li>Groups of about ten pages, for a long file</li>
         <li>A real Retry-After wait on a 429</li>
         <li>A second seat whose sheet hides amounts</li>
         <li>A cleared message when an alert ends</li>
@@ -573,8 +573,11 @@
   <p class="kicker">Part B</p>
   <h2>A contract is a set of pages</h2>
   <p>A one-page invoice is one text block, one model call, one decision. A 100-page contract is a pile of pages. Some have text, some are scans, some are blank on purpose. The person already has the reply that the file is received and not approved. The job id is the document id. Sending the file again hits the same hash.</p>
-  <p>The worker I would run walks the pages. Text stays text. A page with no text goes to OCR. If OCR is still empty, one picture of that page, then a hold that names the page. I do not send a hundred-page scan to the vision model page after page. Pages are then grouped, about ten at a time. Each group is its own call, and each candidate keeps its provenance: which chunk, which pages, which field, which value, which source page, and a short excerpt. The merge step does not see “chunk 4 says 18,000”. It sees “chunk 4 says 18,000, from page 37”. If two chunks disagree, both values are kept and the file is held.</p>
-  <p>That chunking is not in this build. The blank-page rule is. A contract whose second page has no text is held, and the note names page 2. I would rather hold a good invoice that sat next to a blank exhibit than accept a total from a file I could not see all of.</p>
+  <p>The reader walks the pages. Text stays text. A page with no text goes to OCR. If OCR is still empty, the page is named and the file is held. That page is not sent on. A long file is then grouped, about ten at a time. Each group is its own call, and each candidate keeps its provenance: which chunk, which pages, which field, which value, which source page, and a short excerpt. The merge sees that chunk 4 says 18,000, from page 37. If two chunks disagree, both values are kept and the file is held.</p>
+  <p>A file of ten pages or fewer is one call for each page that has text. Past that, the reader splits the pages into groups of about ten. Each group is one call. The call is told the range — pages 21–30 of a longer document — and it may return a field only when those pages support it. It says when the range reads as a continuation. Temperature stays zero. A blank field is left blank. That call uses the same four tries, three seconds apart.</p>
+  <p>The groups run one at a time, with a second and a half between calls. One call is in flight. The limit around it is two or three, so a hundred-page file does not send ten calls at once.</p>
+  <p>The merge is the rule this build already uses. No group offered a value, and the field stays blank. One value is the candidate, with the page it came from. The same value from two groups is kept. Different values are both kept, nothing is picked, and the file is held.</p>
+  <p>A one-page invoice is still one call. The blank-page rule is unchanged. A contract whose second page has no text is held, and the note names page 2. I checked the grouping and the merge against made-up chunk results. I have not put a 100-page file on the book.</p>
   <p>Cost is kept down by doing the cheap work first. The hash and the duplicate check are code. OCR runs only where the page has no text. The model runs only where a person would otherwise have to interpret the page. The price list is secondary, and it moves. Prices checked on 22 September 2026. Flash is 0.30 US dollars per million input tokens and 2.50 per million output tokens. Thinking tokens are billed as output. Flash-Lite is 0.10 and 0.40.</p>
   <table class="dense">
     <thead><tr><th>Job</th><th>Rough size</th><th class="num">Rough cost, thinking off</th></tr></thead>
@@ -623,7 +626,7 @@
       <tr><td>Malformed model JSON</td><td>Held. Never accepted.</td><td>In the checks, when the reply is junk.</td></tr>
       <tr><td>Model timeout or 429</td><td>Retry inside the policy, then hold.</td><td>Four tries, three seconds apart.</td></tr>
       <tr><td>Worker unavailable</td><td>The queue grows, and an alert fires.</td><td>The alert is in the desk. A dead worker was not staged for this submission.</td></tr>
-      <tr><td>100-page document</td><td>Asynchronous. No browser timeout.</td><td>The reply is already asynchronous. Chunks are not.</td></tr>
+      <tr><td>100-page document</td><td>Asynchronous. Groups of about ten pages. A clash is held.</td><td>The reply is already asynchronous. The reader groups the pages. A 100-page file is not on the book.</td></tr>
       <tr><td>Unauthorized person</td><td>No document, and no restricted field.</td><td>Department filter. The link is not a login.</td></tr>
       <tr><td>Sheet unavailable</td><td>The book remains Postgres. Sync retries.</td><td>The sheet is a copy of the book. I have not switched it off for this submission.</td></tr>
     </tbody>
@@ -668,7 +671,7 @@
   <p>A clean invoice comes back accepted, with the supplier, the invoice number, the total, and the page each value was found on. The same file comes back as the same document. A revised total comes back waiting, with the old total and the new one both named, and the current row left alone until a person answers. A contract with an empty second page comes back held, and the note names page 2. The parties and the effective date can still be cited. The file is not accepted.</p>
   <p>The brief’s file formats are a native-text PDF, a scanned image, and a Word document. The book has the PDF cases and one Word invoice, INV-3001, cited from section 1. A picture embedded in a Word file is read with the same OCR as a scanned page. It is not converted into a PDF first. A PNG or a JPEG uses the image route. There is no photo in this book.</p>
   <p>The demo mailbox is team5pmdocintel@gmail.com. For the demo it accepts a file from any sender, so the path can be tested. That is not the live rule. Once this is in production, the inbox accepts a file only when the From address is a company email address. Mail from any other domain is refused. It is not stored, and it is not sent to the model.</p>
-  <p>Production still replaces the link with a real login, groups a long file about ten pages at a time, and honours a real Retry-After. The holds and the hash are rows I can name. ClamAV runs before a file is opened. Slack, Drive, and the mailbox are running doors. I would rather show a hold I can explain than a login I have not built.</p>
+  <p>Production still replaces the link with a real login, and honours a real Retry-After. The holds and the hash are rows I can name. ClamAV runs before a file is opened. Slack, Drive, and the mailbox are running doors. I would rather show a hold I can explain than a login I have not built.</p>
 </section>
 
 <section id="appendix">
@@ -691,7 +694,7 @@
   </table>
   <p>Two earlier scans of the same wrong-words invoice are also held, with a blank total. The row that carries the sentence above is DOC-5321f129-mudzyooh.</p>
   <p>On that morning the status line reported n8n, the book, Redis, the bucket, and the sheet up. Projects and accounts each returned an empty book. Finance returned the finance rows, including amounts.</p>
-  <p>Not a row, and not claimed as shown: a PNG or a JPEG, a pressed no, a killed worker, a switched-off sheet, a staged 429, a test virus, a company-email refusal, a login, groups of ten pages, and a cleared alert. Those are either in the checks, running as doors, or still to build. The lists above say which.</p>
+  <p>Not a row, and not claimed as shown: a PNG or a JPEG, a pressed no, a killed worker, a switched-off sheet, a staged 429, a test virus, a company-email refusal, a login, a 100-page file, and a cleared alert. Those are either in the checks, running as doors, or still to build. The lists above say which.</p>
 </section>
 
 <section class="endnote" id="references">

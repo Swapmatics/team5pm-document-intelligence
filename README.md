@@ -55,7 +55,7 @@ Copy `.env.example` to `.env` and `04-run/.env.example` to `04-run/.env`. The we
 2. ClamAV scans it before it is opened. A flagged file is refused. If the scanner does not finish, the file is not opened.
 3. The same bytes as a file already on the book are named. No second row is written, and no model call is spent. Two uploads of those bytes at once take one lock. The second waits, then is told the existing id.
 4. A new file is stored in the private bucket `docintel-originals`, a `received` row is inserted, and the read is queued. The reply says the file is not approved yet.
-5. A page with text is one model call. A page with no text is read with Apple Vision. An empty page is held and named, and it is not sent on. A Word file is read as a Word file. A value keeps the page or section it came from, and a short excerpt.
+5. A file of ten pages or fewer sends one model call per page that has text. A longer file is grouped about ten pages at a time, one call at a time, with a second and a half between calls. A page with no text is read with Apple Vision. An empty page is held and named, and it is not sent on. A Word file is read as a Word file. A value keeps the page or section it came from, and a short excerpt. Two groups that disagree leave the field blank.
 6. A held row can be corrected on the desk. A changed invoice or contract waits for yes or no. Yes supersedes the old row and accepts the new one in one transaction.
 
 The Google Sheet is a copy of those columns, split into Current, Held, Reading, and History. It is not the book. Each row links to a viewable copy of the file.
